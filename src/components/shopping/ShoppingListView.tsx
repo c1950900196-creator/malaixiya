@@ -159,18 +159,11 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
             </CardHeader>
             <CardContent>
               <ul className="space-y-3">
-                {groupedItems[category].map((item) => {
-                  // 临时调试：打印 item 数据
-                  if (!item.notes || item.notes.includes('未知')) {
-                    console.log('🐛 Debug item:', {
-                      id: item.id,
-                      notes: item.notes,
-                      category: item.category,
-                      quantity: item.quantity,
-                      unit: item.unit,
-                      ingredient: item.ingredient
-                    });
-                  }
+                {groupedItems[category].map((item, idx) => {
+                  // 🔍 调试：打印每个 item 的完整数据
+                  console.log(`🛒 Item ${idx + 1}:`, JSON.stringify(item, null, 2));
+                  console.log(`   notes 字段值: "${item.notes}"`);
+                  console.log(`   显示名称: "${item.notes?.split('|')[0]?.trim() || '未知食材'}"`);
                   
                   return (
                   <li key={item.id} className="flex items-start gap-3 group">
