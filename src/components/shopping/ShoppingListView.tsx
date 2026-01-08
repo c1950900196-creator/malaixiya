@@ -159,7 +159,20 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
             </CardHeader>
             <CardContent>
               <ul className="space-y-3">
-                {groupedItems[category].map((item) => (
+                {groupedItems[category].map((item) => {
+                  // 临时调试：打印 item 数据
+                  if (!item.notes || item.notes.includes('未知')) {
+                    console.log('🐛 Debug item:', {
+                      id: item.id,
+                      notes: item.notes,
+                      category: item.category,
+                      quantity: item.quantity,
+                      unit: item.unit,
+                      ingredient: item.ingredient
+                    });
+                  }
+                  
+                  return (
                   <li key={item.id} className="flex items-start gap-3 group">
                     <Checkbox
                       checked={item.is_purchased}
@@ -194,7 +207,8 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
                       </div>
                     </div>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             </CardContent>
           </Card>
