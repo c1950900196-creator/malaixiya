@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Vercel 配置：延长函数执行时间
+export const maxDuration = 30; // 30秒
+
 export async function POST(request: NextRequest) {
   try {
     const { prompt } = await request.json();
@@ -29,7 +32,7 @@ export async function POST(request: NextRequest) {
     let response;
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60秒超时
+      const timeoutId = setTimeout(() => controller.abort(), 25000); // 25秒超时
       
       response = await fetch(process.env.DOUBAO_API_ENDPOINT, {
         method: 'POST',
@@ -50,7 +53,7 @@ export async function POST(request: NextRequest) {
             }
           ],
           temperature: 0.3,
-          max_tokens: 1500, // 降低到 1500，加快响应速度
+          max_tokens: 1200, // 降低到 1200，加快响应速度
         }),
         signal: controller.signal,
       });

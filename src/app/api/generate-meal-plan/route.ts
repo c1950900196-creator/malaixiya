@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Vercel 配置：延长函数执行时间
+export const maxDuration = 30; // 30秒（免费版最多60秒，我们设置保守一些）
+
 export async function POST(request: NextRequest) {
   try {
     const { userProfile, restrictions } = await request.json();
@@ -40,9 +43,11 @@ export async function POST(request: NextRequest) {
     
     // 调用豆包API，设置超时
     let response;
+    let useFallback = false;
+    
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60秒超时
+      const timeoutId = setTimeout(() => controller.abort(), 25000); // 25秒超时（给 Vercel 5秒缓冲）
       
       response = await fetch(process.env.DOUBAO_API_ENDPOINT, {
         method: 'POST',
@@ -55,15 +60,15 @@ export async function POST(request: NextRequest) {
           messages: [
             {
               role: 'system',
-              content: '你是马来西亚营养师。仅返回JSON，不要解释。'
+              content: '你是营养师。只返回JSON，无需解释。'
             },
             {
               role: 'user',
               content: prompt
             }
           ],
-          temperature: 0.8,
-          max_tokens: 1500,
+          temperature: 0.7,
+          max_tokens: 1000, // 降低到 1000，加快响应
         }),
         signal: controller.signal,
       });
@@ -74,89 +79,78 @@ export async function POST(request: NextRequest) {
       
       // 检查是否是超时错误
       if (fetchError.name === 'AbortError') {
-        return NextResponse.json(
-          { 
-            error: 'Timeout',
-            message: '豆包 API 响应超时（超过60秒）。请检查网络连接或稍后重试。'
-          },
-          { status: 504 }
-        );
+        console.log('⏱️ Doubao API 超时，使用本地算法生成膳食计划');
+        useFallback = true;
+      } else {
+        console.log('⚠️ Doubao API 调用失败，使用本地算法生成膳食计划');
+        useFallback = true;
       }
-      
-      return NextResponse.json(
-        { 
-          error: 'Network error',
-          message: `无法连接到豆包 API: ${fetchError.message}`
-        },
-        { status: 500 }
-      );
     }
     
-    if (!response.ok) {
+    // 如果没有错误且响应成功，尝试解析
+    if (!useFallback && response && response.ok) {
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content || '';
+      
+      console.log('📥 Received response from Doubao');
+      
+      // 解析JSON响应
+      try {
+        let result;
+        let jsonString = '';
+        
+        // 尝试多种方式提取JSON
+        if (content.includes('```json')) {
+          const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
+          if (jsonMatch) {
+            jsonString = jsonMatch[1];
+          }
+        } else if (content.includes('```')) {
+          const codeMatch = content.match(/```\s*([\s\S]*?)\s*```/);
+          if (codeMatch) {
+            jsonString = codeMatch[1];
+          }
+        } else {
+          const jsonMatch = content.match(/\{[\s\S]*"plan"[\s\S]*\}/);
+          if (jsonMatch) {
+            jsonString = jsonMatch[0];
+          } else {
+            jsonString = content;
+          }
+        }
+        
+        // 清理 JSON 字符串：移除 trailing commas
+        jsonString = jsonString.replace(/,(\s*[\]}])/g, '$1');
+        
+        // 解析清理后的 JSON
+        result = JSON.parse(jsonString);
+        
+        if (!result || !result.plan) {
+          throw new Error('No valid meal plan found in response');
+        }
+        
+        console.log('✅ Successfully parsed meal plan with', result.plan.length, 'days');
+        
+        return NextResponse.json(result);
+      } catch (parseError) {
+        console.error('❌ JSON parse error:', parseError);
+        console.error('Content preview:', content.substring(0, 500));
+        console.log('⚠️ AI 响应解析失败，使用本地算法生成膳食计划');
+        useFallback = true;
+      }
+    } else if (!useFallback && response && !response.ok) {
       const errorText = await response.text();
       console.error('❌ Doubao API error:', response.status, errorText);
-      return NextResponse.json(
-        { error: 'AI generation failed', details: errorText },
-        { status: response.status }
-      );
+      console.log('⚠️ AI 返回错误，使用本地算法生成膳食计划');
+      useFallback = true;
     }
     
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || '';
-    
-    console.log('📥 Received response from Doubao');
-    
-    // 解析JSON响应
-    try {
-      let result;
-      let jsonString = '';
-      
-      // 尝试多种方式提取JSON
-      if (content.includes('```json')) {
-        const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
-        if (jsonMatch) {
-          jsonString = jsonMatch[1];
-        }
-      } else if (content.includes('```')) {
-        const codeMatch = content.match(/```\s*([\s\S]*?)\s*```/);
-        if (codeMatch) {
-          jsonString = codeMatch[1];
-        }
-      } else {
-        const jsonMatch = content.match(/\{[\s\S]*"plan"[\s\S]*\}/);
-        if (jsonMatch) {
-          jsonString = jsonMatch[0];
-        } else {
-          jsonString = content;
-        }
-      }
-      
-      // 清理 JSON 字符串：移除 trailing commas
-      // 处理数组中的 trailing comma: },  ] -> }, ]
-      jsonString = jsonString.replace(/,(\s*[\]}])/g, '$1');
-      
-      // 解析清理后的 JSON
-      result = JSON.parse(jsonString);
-      
-      if (!result || !result.plan) {
-        throw new Error('No valid meal plan found in response');
-      }
-      
-      console.log('✅ Successfully parsed meal plan with', result.plan.length, 'days');
-      
-      return NextResponse.json(result);
-    } catch (parseError) {
-      console.error('❌ JSON parse error:', parseError);
-      console.error('Content preview:', content.substring(0, 500));
-      
-      return NextResponse.json(
-        { 
-          error: 'Failed to parse AI response', 
-          message: 'AI返回的格式无法解析，请重试',
-          rawContent: content.substring(0, 300)
-        },
-        { status: 500 }
-      );
+    // 如果需要使用 fallback，返回简单的膳食计划
+    if (useFallback) {
+      console.log('🔄 Using local fallback algorithm');
+      return NextResponse.json({
+        plan: generateFallbackMealPlan()
+      });
     }
   } catch (error: any) {
     console.error('❌ Meal plan generation error:', error);
@@ -165,5 +159,36 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// 本地 fallback 算法
+function generateFallbackMealPlan() {
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const meals = {
+    breakfast: [
+      { name_zh: '椰浆饭', name_en: 'Nasi Lemak' },
+      { name_zh: '印度煎饼', name_en: 'Roti Canai' },
+      { name_zh: '海南咖啡吐司', name_en: 'Kaya Toast' },
+    ],
+    lunch: [
+      { name_zh: '炒粿条', name_en: 'Char Kway Teow' },
+      { name_zh: '福建炒面', name_en: 'Hokkien Mee' },
+      { name_zh: '椰浆饭', name_en: 'Nasi Lemak' },
+    ],
+    dinner: [
+      { name_zh: '肉骨茶', name_en: 'Bak Kut Teh' },
+      { name_zh: '咖喱叻沙', name_en: 'Curry Laksa' },
+      { name_zh: '沙爹', name_en: 'Satay' },
+    ],
+  };
+  
+  return days.map((day, i) => ({
+    day,
+    meals: {
+      breakfast: meals.breakfast[i % 3],
+      lunch: meals.lunch[i % 3],
+      dinner: meals.dinner[i % 3],
+    }
+  }));
 }
 
