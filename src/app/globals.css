@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050505;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #38e07b;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Donut Chart */
+.donut-chart {
+  background: conic-gradient(
+    #38e07b 0% 45%,
+    #22c55e 45% 75%,
+    #15803d 75% 100%
+  );
+  border-radius: 50%;
+}
+
+@layer base {
+  body {
+    @apply bg-background-dark text-text-dark font-sans antialiased selection:bg-primary selection:text-black min-h-screen;
+  }
+}
+
+/* Animation delays for loading dots */
+@layer utilities {
+  .animation-delay-200 {
+    animation-delay: 0.2s;
+  }
+  .animation-delay-400 {
+    animation-delay: 0.4s;
+  }
+}
+
+
