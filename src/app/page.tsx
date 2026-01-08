@@ -32,21 +32,22 @@ async function generateShoppingListInBackground(userId: string, mealPlanId: stri
     
     console.log('✅ Shopping list created:', shoppingList.id);
     
-    // 使用豆包AI生成购物清单
-    const recipeNames = mealPlan.map(m => m.recipe.name_zh || m.recipe.name_ms).join(', ');
+    // 使用豆包AI生成购物清单（优化版：缩短 Prompt）
+    const recipeNames = mealPlan.map(m => m.recipe.name_zh || m.recipe.name_ms).join('、');
     
-    const prompt = `请根据以下马来西亚菜谱生成购物清单：${recipeNames}
+    // 限制菜谱名称长度，避免 Prompt 过长
+    const shortRecipeNames = recipeNames.length > 200 
+      ? recipeNames.substring(0, 200) + '...' 
+      : recipeNames;
+    
+    const prompt = `为以下马来西亚菜谱生成购物清单：${shortRecipeNames}
 
-要求：
-1. 4人份，一周用量
-2. 合并相同食材
-3. 估算马来西亚市场价格(RM)
-4. 按类别分组
+要求：4人份、一周、合并相同食材、估算价格(RM)
 
-必须只返回纯JSON，不要任何其他文字或解释，格式：
-{"items":[{"name":"洋葱","name_en":"Onion","name_ms":"Bawang","category":"新鲜蔬菜","quantity":800,"unit":"g","price":4.8}]}
+JSON格式：
+{"items":[{"name":"洋葱","name_en":"Onion","category":"蔬菜","quantity":800,"unit":"g","price":4.8}]}
 
-类别只能是：新鲜蔬菜、肉类 & 海鲜、调味料、谷物 & 主食、水果、其他`;
+类别：蔬菜、肉类、调味料、主食、水果、其他`;
 
     const response = await fetch('/api/generate-shopping-list', {
       method: 'POST',

@@ -109,26 +109,34 @@ export async function POST(request: NextRequest) {
     // 解析JSON响应
     try {
       let result;
+      let jsonString = '';
       
       // 尝试多种方式提取JSON
       if (content.includes('```json')) {
         const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
         if (jsonMatch) {
-          result = JSON.parse(jsonMatch[1]);
+          jsonString = jsonMatch[1];
         }
       } else if (content.includes('```')) {
         const codeMatch = content.match(/```\s*([\s\S]*?)\s*```/);
         if (codeMatch) {
-          result = JSON.parse(codeMatch[1]);
+          jsonString = codeMatch[1];
         }
       } else {
         const jsonMatch = content.match(/\{[\s\S]*"plan"[\s\S]*\}/);
         if (jsonMatch) {
-          result = JSON.parse(jsonMatch[0]);
+          jsonString = jsonMatch[0];
         } else {
-          result = JSON.parse(content);
+          jsonString = content;
         }
       }
+      
+      // 清理 JSON 字符串：移除 trailing commas
+      // 处理数组中的 trailing comma: },  ] -> }, ]
+      jsonString = jsonString.replace(/,(\s*[\]}])/g, '$1');
+      
+      // 解析清理后的 JSON
+      result = JSON.parse(jsonString);
       
       if (!result || !result.plan) {
         throw new Error('No valid meal plan found in response');
