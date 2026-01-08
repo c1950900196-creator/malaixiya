@@ -175,7 +175,12 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
                             : 'text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors'
                         }
                       >
-                        {item.ingredient?.name_zh || item.ingredient?.name_ms || item.ingredient?.name_en || '未知食材'}
+                        {/* 优先使用 notes 字段（AI 生成的食材名），否则用 ingredient 关联的食材 */}
+                        {item.notes?.split('|')[0]?.trim() || 
+                         item.ingredient?.name_zh || 
+                         item.ingredient?.name_ms || 
+                         item.ingredient?.name_en || 
+                         '未知食材'}
                       </p>
                       <div className="flex items-center justify-between mt-1">
                         <p className="text-xs text-gray-600 dark:text-gray-300">
