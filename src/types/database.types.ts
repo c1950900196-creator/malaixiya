@@ -133,12 +133,13 @@ export interface ShoppingList {
 export interface ShoppingListItem {
   id: string;
   shopping_list_id: string;
-  ingredient_id: string;
+  ingredient_id: string | null;  // AI 生成的购物清单不关联 ingredients 表，所以可能为 null
   quantity: number;
   unit: string;
   is_purchased: boolean;
   estimated_price?: number;
   category?: string;
+  notes?: string;  // 关键字段：存储 AI 生成的食材名称，格式为 "中文名 | English | Bahasa Malaysia"
   created_at: string;
 }
 

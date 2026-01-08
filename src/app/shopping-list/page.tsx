@@ -37,7 +37,6 @@ export default function ShoppingListPage() {
       if (!mealPlans || mealPlans.length === 0) {
         console.log('No meal plans found');
         setIsLoading(false);
-        setIsGenerating(false);
         setItems([]);
         return;
       }
