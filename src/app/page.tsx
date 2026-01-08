@@ -9,11 +9,11 @@ import { createBrowserClient } from '@/lib/supabase';
 import { useUserStore } from '@/store/userStore';
 import { useMealPlanStore } from '@/store/mealPlanStore';
 
-// 后台异步生成购物清单
-async function generateShoppingListInBackground(userId: string, mealPlanId: string, mealPlan: any[], supabase: any) {
+// 后台异步生成购物清单（已废弃 - 现在由膳食计划 API 一起生成）
+async function saveShoppingListFromAI(userId: string, mealPlanId: string, shoppingListItems: any[], supabase: any) {
   try {
-    console.log('🛒 Starting background shopping list generation...');
-    
+    console.log('🛒 Saving shopping list from AI response...');
+
     // 创建购物清单记录
     const { data: shoppingList, error: listError } = await supabase
       .from('shopping_lists')
@@ -24,58 +24,17 @@ async function generateShoppingListInBackground(userId: string, mealPlanId: stri
       })
       .select()
       .single();
-    
+
     if (listError) {
       console.error('❌ Shopping list creation error:', listError);
       return;
     }
-    
+
     console.log('✅ Shopping list created:', shoppingList.id);
-    
-    // 使用豆包AI生成购物清单（优化版：缩短 Prompt）
-    const recipeNames = mealPlan.map(m => m.recipe.name_zh || m.recipe.name_ms).join('、');
-    
-    // 限制菜谱名称长度，避免 Prompt 过长
-    const shortRecipeNames = recipeNames.length > 200 
-      ? recipeNames.substring(0, 200) + '...' 
-      : recipeNames;
-    
-    const prompt = `为以下马来西亚菜谱生成购物清单：${shortRecipeNames}
 
-要求：4人份、一周、合并相同食材、估算价格(RM)
-
-JSON格式：
-{"items":[{"name":"洋葱","name_en":"Onion","category":"蔬菜","quantity":800,"unit":"g","price":4.8}]}
-
-类别：蔬菜、肉类、调味料、主食、水果、其他`;
-
-    const response = await fetch('/api/generate-shopping-list', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt }),
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ AI generation failed:', response.status, errorText);
-      console.error('🔍 Response status:', response.status);
-      console.error('🔍 Response headers:', Object.fromEntries(response.headers.entries()));
-      
-      // 尝试解析错误信息
-      try {
-        const errorJson = JSON.parse(errorText);
-        console.error('🔍 Error details:', errorJson);
-      } catch (e) {
-        console.error('🔍 Raw error text:', errorText);
-      }
-      return;
-    }
-    
-    const result = await response.json();
-    console.log('✅ AI response received:', result);
-    
-    if (result.items && result.items.length > 0) {
-      const shoppingItems = result.items.map((item: any) => ({
+    // 保存购物清单项目
+    if (shoppingListItems && shoppingListItems.length > 0) {
+      const items = shoppingListItems.map((item: any) => ({
         shopping_list_id: shoppingList.id,
         ingredient_id: null,
         quantity: item.quantity,
@@ -85,19 +44,19 @@ JSON格式：
         is_purchased: false,
         notes: `${item.name} | ${item.name_en || ''} | ${item.name_ms || ''}`,
       }));
-      
-      const { error: aiItemsError } = await supabase
+
+      const { error: itemsError } = await supabase
         .from('shopping_list_items')
-        .insert(shoppingItems);
-      
-      if (aiItemsError) {
-        console.error('❌ AI shopping list items error:', aiItemsError);
+        .insert(items);
+
+      if (itemsError) {
+        console.error('❌ Shopping list items error:', itemsError);
       } else {
-        console.log(`✅ AI-generated shopping list with ${shoppingItems.length} items`);
+        console.log(`✅ Saved ${items.length} shopping list items`);
       }
     }
   } catch (error) {
-    console.error('❌ Shopping list generation error:', error);
+    console.error('❌ Shopping list save error:', error);
   }
 }
 
@@ -499,8 +458,13 @@ export default function Home() {
         router.push('/dashboard');
       }, 500);
       
-      // 在后台异步生成购物清单（不阻塞跳转）
-      generateShoppingListInBackground(user.id, planData.id, mealPlan, supabase);
+      // 如果 AI 返回了购物清单，直接保存（不需要再调用 API）
+      if (aiResult.shopping_list && aiResult.shopping_list.length > 0) {
+        console.log('✅ AI 已生成购物清单，直接保存');
+        saveShoppingListFromAI(user.id, planData.id, aiResult.shopping_list, supabase);
+      } else {
+        console.log('⚠️ AI 未返回购物清单，跳过保存');
+      }
     } catch (error: any) {
       console.error('Error saving profile:', error);
       
