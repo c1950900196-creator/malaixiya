@@ -102,7 +102,7 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            我的每周购物清单
+            我的每周购物清单 <span className="text-xs text-red-500">(v3-debug)</span>
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             包含7天所需的所有食材 • {purchasedCount} / {items.length} 已购买
