@@ -55,11 +55,23 @@ async function generateShoppingListInBackground(userId: string, mealPlanId: stri
     });
     
     if (!response.ok) {
-      console.error('❌ AI generation failed:', await response.text());
+      const errorText = await response.text();
+      console.error('❌ AI generation failed:', response.status, errorText);
+      console.error('🔍 Response status:', response.status);
+      console.error('🔍 Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      // 尝试解析错误信息
+      try {
+        const errorJson = JSON.parse(errorText);
+        console.error('🔍 Error details:', errorJson);
+      } catch (e) {
+        console.error('🔍 Raw error text:', errorText);
+      }
       return;
     }
     
     const result = await response.json();
+    console.log('✅ AI response received:', result);
     
     if (result.items && result.items.length > 0) {
       const shoppingItems = result.items.map((item: any) => ({
