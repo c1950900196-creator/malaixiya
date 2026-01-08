@@ -19,7 +19,7 @@ export default function ShoppingListPage() {
   
   // 轮询检查购物清单是否生成完成
   useEffect(() => {
-    if (isGenerating && checkCount < 20) {
+    if (isGenerating && checkCount < 30) { // 增加到 30 次（最多 90 秒）
       const timer = setTimeout(() => {
         console.log('🔄 Checking if shopping list is ready... (attempt', checkCount + 1, ')');
         loadShoppingList();
@@ -27,6 +27,10 @@ export default function ShoppingListPage() {
       }, 3000); // 每3秒检查一次
       
       return () => clearTimeout(timer);
+    } else if (isGenerating && checkCount >= 30) {
+      // 超时后停止生成状态，显示刷新提示
+      console.log('⏱️ Polling timeout, stopping...');
+      setIsGenerating(false);
     }
   }, [isGenerating, checkCount]);
   
@@ -133,6 +137,7 @@ export default function ShoppingListPage() {
         setItems(itemsData);
         setIsGenerating(false);
         setCheckCount(0); // 重置检查计数
+        setIsLoading(false); // 确保加载状态也被重置
       }
     } catch (error) {
       console.error('Error:', error);
@@ -193,17 +198,30 @@ export default function ShoppingListPage() {
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               我们的 AI 正在智能分析您的膳食计划，生成完整的购物清单...
             </p>
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
               <p className="text-sm text-blue-800 dark:text-blue-300">
                 💡 <strong>提示：</strong>这通常需要 30-60 秒，请稍候
               </p>
             </div>
+            {checkCount > 15 && (
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
+                <p className="text-sm text-yellow-800 dark:text-yellow-300">
+                  ⏱️ 生成时间较长，如果超过 90 秒，请尝试刷新页面
+                </p>
+              </div>
+            )}
             <div className="mt-6 flex items-center justify-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-              <span>检查中</span>
+              <span>检查中 (第 {checkCount + 1} 次)</span>
               <span className="animate-pulse">●</span>
               <span className="animate-pulse animation-delay-200">●</span>
               <span className="animate-pulse animation-delay-400">●</span>
             </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-6 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              手动刷新页面
+            </button>
           </div>
         </div>
       </MainLayout>
