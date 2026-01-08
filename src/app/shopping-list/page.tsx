@@ -12,6 +12,7 @@ export default function ShoppingListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [checkCount, setCheckCount] = useState(0);
+  const [hasStartedPolling, setHasStartedPolling] = useState(false);
   
   useEffect(() => {
     loadShoppingList();
@@ -19,20 +20,37 @@ export default function ShoppingListPage() {
   
   // 轮询检查购物清单是否生成完成
   useEffect(() => {
-    if (isGenerating && checkCount < 30) { // 增加到 30 次（最多 90 秒）
-      const timer = setTimeout(() => {
-        console.log('🔄 Checking if shopping list is ready... (attempt', checkCount + 1, ')');
-        loadShoppingList();
-        setCheckCount(checkCount + 1);
-      }, 3000); // 每3秒检查一次
+    if (isGenerating) {
+      // 首次检测到正在生成时，等待 20 秒后开始轮询
+      if (!hasStartedPolling) {
+        console.log('⏳ Waiting 20 seconds before polling...');
+        const initialTimer = setTimeout(() => {
+          console.log('🔄 Starting to check shopping list...');
+          setHasStartedPolling(true);
+          loadShoppingList();
+        }, 20000); // 20秒后开始第一次检查
+        
+        return () => clearTimeout(initialTimer);
+      }
       
-      return () => clearTimeout(timer);
-    } else if (isGenerating && checkCount >= 30) {
-      // 超时后停止生成状态，显示刷新提示
-      console.log('⏱️ Polling timeout, stopping...');
-      setIsGenerating(false);
+      // 开始轮询后，每 5 秒检查一次，最多 10 次（50 秒）
+      if (hasStartedPolling && checkCount < 10) {
+        const timer = setTimeout(() => {
+          console.log('🔄 Checking if shopping list is ready... (attempt', checkCount + 1, ')');
+          loadShoppingList();
+          setCheckCount(checkCount + 1);
+        }, 5000); // 每5秒检查一次
+        
+        return () => clearTimeout(timer);
+      } else if (hasStartedPolling && checkCount >= 10) {
+        // 超时后停止生成状态，显示刷新提示
+        console.log('⏱️ Polling timeout, stopping...');
+        setIsGenerating(false);
+        setHasStartedPolling(false);
+        setCheckCount(0);
+      }
     }
-  }, [isGenerating, checkCount]);
+  }, [isGenerating, hasStartedPolling, checkCount]);
   
   const loadShoppingList = async () => {
     try {
@@ -90,9 +108,15 @@ export default function ShoppingListPage() {
         if (timeDiff < 5 * 60 * 1000) {
           // 5分钟内，可能正在生成
           console.log('🛒 Shopping list might be generating...');
-          setIsGenerating(true);
+          if (!isGenerating) {
+            setIsGenerating(true);
+            setHasStartedPolling(false);
+            setCheckCount(0);
+          }
         } else {
           setIsGenerating(false);
+          setHasStartedPolling(false);
+          setCheckCount(0);
         }
         
         setItems([]);
@@ -125,23 +149,32 @@ export default function ShoppingListPage() {
         if (timeDiff < 5 * 60 * 1000) {
           // 5分钟内，可能正在生成
           console.log('🛒 Shopping list is being generated...');
-          setIsGenerating(true);
+          if (!isGenerating) {
+            setIsGenerating(true);
+            setHasStartedPolling(false);
+            setCheckCount(0);
+          }
         } else {
           setIsGenerating(false);
+          setHasStartedPolling(false);
+          setCheckCount(0);
         }
         
         setItems([]);
       } else {
-        // 有数据，生成完成
+        // 有数据，生成完成 - 立即停止所有轮询
         console.log('✅ Shopping list loaded:', itemsData.length, 'items');
         setItems(itemsData);
         setIsGenerating(false);
-        setCheckCount(0); // 重置检查计数
-        setIsLoading(false); // 确保加载状态也被重置
+        setHasStartedPolling(false);
+        setCheckCount(0);
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('Error:', error);
       setIsGenerating(false);
+      setHasStartedPolling(false);
+      setCheckCount(0);
     } finally {
       setIsLoading(false);
     }
@@ -200,18 +233,25 @@ export default function ShoppingListPage() {
             </p>
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
               <p className="text-sm text-blue-800 dark:text-blue-300">
-                💡 <strong>提示：</strong>这通常需要 30-60 秒，请稍候
+                💡 <strong>提示：</strong>
+                {!hasStartedPolling 
+                  ? '正在等待 AI 生成（约 20 秒），请耐心等待...' 
+                  : `这通常需要 15-30 秒，已检查 ${checkCount} 次`}
               </p>
             </div>
-            {checkCount > 15 && (
+            {hasStartedPolling && checkCount > 5 && (
               <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
                 <p className="text-sm text-yellow-800 dark:text-yellow-300">
-                  ⏱️ 生成时间较长，如果超过 90 秒，请尝试刷新页面
+                  ⏱️ 生成时间较长，如果一直卡住，请尝试刷新页面
                 </p>
               </div>
             )}
             <div className="mt-6 flex items-center justify-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-              <span>检查中 (第 {checkCount + 1} 次)</span>
+              {hasStartedPolling ? (
+                <span>检查中 (第 {checkCount} 次)</span>
+              ) : (
+                <span>等待 AI 生成中...</span>
+              )}
               <span className="animate-pulse">●</span>
               <span className="animate-pulse animation-delay-200">●</span>
               <span className="animate-pulse animation-delay-400">●</span>
