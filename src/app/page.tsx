@@ -34,16 +34,24 @@ async function saveShoppingListFromAI(userId: string, mealPlanId: string, shoppi
 
     // 保存购物清单项目
     if (shoppingListItems && shoppingListItems.length > 0) {
-      const items = shoppingListItems.map((item: any) => ({
-        shopping_list_id: shoppingList.id,
-        ingredient_id: null,
-        quantity: item.quantity,
-        unit: item.unit,
-        category: item.category || '其他',
-        estimated_price: item.price || 0,
-        is_purchased: false,
-        notes: `${item.name} | ${item.name_en || ''} | ${item.name_ms || ''}`,
-      }));
+      console.log('📦 Processing', shoppingListItems.length, 'shopping items');
+      console.log('📦 First item:', shoppingListItems[0]);
+      
+      const items = shoppingListItems.map((item: any) => {
+        const notesText = `${item.name || '未知'} | ${item.name_en || ''} | ${item.name_ms || ''}`;
+        console.log('📝 Item notes:', notesText);
+        
+        return {
+          shopping_list_id: shoppingList.id,
+          ingredient_id: null,
+          quantity: item.quantity || 0,
+          unit: item.unit || 'g',
+          category: item.category || '其他',
+          estimated_price: item.price || 0,
+          is_purchased: false,
+          notes: notesText,
+        };
+      });
 
       const { error: itemsError } = await supabase
         .from('shopping_list_items')
@@ -54,6 +62,8 @@ async function saveShoppingListFromAI(userId: string, mealPlanId: string, shoppi
       } else {
         console.log(`✅ Saved ${items.length} shopping list items`);
       }
+    } else {
+      console.log('⚠️ No shopping list items to save');
     }
   } catch (error) {
     console.error('❌ Shopping list save error:', error);

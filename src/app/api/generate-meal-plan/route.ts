@@ -16,11 +16,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
     }
     
-    // 构建给豆包的提示词（简化版但完整）
+    // 构建给豆包的提示词（优化：明确字段名）
     const prompt = `为${userProfile.age}岁${userProfile.gender}（目标：${userProfile.health_goal}${restrictions && restrictions.length > 0 ? `，限制：${restrictions.join('、')}` : ''}）生成7天马来西亚膳食计划和购物清单。
 
-返回JSON（紧凑格式）：
-{"plan":[{"day":"Monday","meals":{"breakfast":{"name_zh":"椰浆饭","name_en":"Nasi Lemak"},"lunch":{"name_zh":"炒粿条","name_en":"Char Kway Teow"},"dinner":{"name_zh":"肉骨茶","name_en":"Bak Kut Teh"}}},...6天],"shopping_list":[{"name":"大米","name_en":"Rice","category":"主食","quantity":3000,"unit":"g","price":12},...其他]}`;
+返回JSON（必须包含以下字段）：
+{
+  "plan":[
+    {"day":"Monday","meals":{"breakfast":{"name_zh":"椰浆饭","name_en":"Nasi Lemak"},"lunch":{"name_zh":"炒粿条","name_en":"Char Kway Teow"},"dinner":{"name_zh":"肉骨茶","name_en":"Bak Kut Teh"}}},
+    ...其他6天
+  ],
+  "shopping_list":[
+    {"name":"大米","name_en":"Rice","category":"主食","quantity":3000,"unit":"g","price":12},
+    {"name":"鸡肉","name_en":"Chicken","category":"肉类","quantity":1500,"unit":"g","price":18},
+    ...其他食材
+  ]
+}
+
+注意：shopping_list中每个item必须有name字段（中文名称）`;
 
     console.log('📤 Calling Doubao API for meal plan generation...');
     console.log('🔧 Prompt length:', prompt.length, 'characters');
