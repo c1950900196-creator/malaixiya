@@ -203,82 +203,30 @@ export default function Home() {
       
       const restrictionsArray = data.restrictions || [];
       
-      // 尝试使用豆包 AI 生成膳食计划
+      // 使用豆包 AI 生成膳食计划（不使用本地 fallback）
       setProgress(40);
       setLoadingStep('正在使用AI生成个性化膳食计划...');
       
       let aiResult: any = null;
-      let useLocalAlgorithm = false;
       
-      try {
-        const aiResponse = await fetch('/api/generate-meal-plan', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userProfile,
-            restrictions: restrictionsArray,
-          }),
-        });
-        
-        if (aiResponse.ok) {
-          aiResult = await aiResponse.json();
-          console.log('✅ AI generated meal plan:', aiResult.plan.length, 'days');
-        } else {
-          console.warn('⚠️ AI generation failed, using local algorithm');
-          useLocalAlgorithm = true;
-        }
-      } catch (error) {
-        console.warn('⚠️ AI generation error, using local algorithm:', error);
-        useLocalAlgorithm = true;
-      }
+      const aiResponse = await fetch('/api/generate-meal-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userProfile,
+          restrictions: restrictionsArray,
+        }),
+      });
       
-      // 如果AI失败，使用本地算法
-      if (useLocalAlgorithm) {
-        setLoadingStep('使用本地算法生成膳食计划...');
-        const { generateWeeklyMealPlan } = await import('@/lib/ai-recommendation');
-        // 转换restrictions格式：从字符串数组转换为对象数组
-        const restrictionsForAlgorithm = (data.restrictions || []).map((type: string) => ({
-          id: '',
-          user_id: user.id,
-          restriction_type: type as any,
-          created_at: new Date().toISOString(),
-        }));
-        // 注意：函数参数顺序是 (recipes, profile, restrictions)
-        const localPlan = generateWeeklyMealPlan(recipes, userProfile, restrictionsForAlgorithm);
-        
-        console.log('📋 Local plan generated:', localPlan.length, 'meals');
-        
-        if (!localPlan || localPlan.length === 0) {
-          throw new Error('本地算法生成失败，请检查食谱数据库');
-        }
-        
-        // 转换本地计划格式为AI格式
-        const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-        aiResult = {
-          plan: dayNames.map((day, index) => {
-            const breakfast = localPlan[index * 3];
-            const lunch = localPlan[index * 3 + 1];
-            const dinner = localPlan[index * 3 + 2];
-            
-            return {
-              day,
-              meals: {
-                breakfast: breakfast?.recipe ? { 
-                  name_zh: breakfast.recipe.name_zh || '', 
-                  name_en: breakfast.recipe.name_en || '' 
-                } : null,
-                lunch: lunch?.recipe ? { 
-                  name_zh: lunch.recipe.name_zh || '', 
-                  name_en: lunch.recipe.name_en || '' 
-                } : null,
-                dinner: dinner?.recipe ? { 
-                  name_zh: dinner.recipe.name_zh || '', 
-                  name_en: dinner.recipe.name_en || '' 
-                } : null,
-              }
-            };
-          })
-        };
+      if (aiResponse.ok) {
+        aiResult = await aiResponse.json();
+        console.log('✅ AI generated meal plan:', aiResult.plan?.length || 0, 'days');
+      } else {
+        // AI 生成失败，直接显示错误
+        const errorData = await aiResponse.json().catch(() => ({}));
+        const errorMessage = errorData.message || errorData.error || 'AI 生成膳食计划失败';
+        console.error('❌ AI generation failed:', errorMessage);
+        throw new Error(errorMessage);
       }
       
       // 验证aiResult
