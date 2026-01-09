@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -12,6 +12,7 @@ import { Checkbox } from '@/components/ui/Checkbox';
 import { Activity, Wallet, Target, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { HealthGoal, RestrictionType } from '@/types/database.types';
+import { createBrowserClient } from '@/lib/supabase';
 
 const profileSchema = z.object({
   full_name: z.string().min(2, '姓名至少2个字符'),
@@ -36,7 +37,7 @@ export const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ onSubmit, in
   const [restrictions, setRestrictions] = useState<RestrictionType[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { register, handleSubmit, formState: { errors }, watch } = useForm<ProfileFormData>({
+  const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       full_name: '',
@@ -50,6 +51,49 @@ export const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ onSubmit, in
       ...initialData,
     },
   });
+  
+  // 自动加载已登录用户的姓名
+  useEffect(() => {
+    const loadUserInfo = async () => {
+      try {
+        const supabase = createBrowserClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          // 优先使用用户元数据中的姓名
+          const fullName = user.user_metadata?.full_name || '';
+          if (fullName) {
+            setValue('full_name', fullName);
+          }
+          
+          // 尝试从 user_profiles 表加载更多信息
+          const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+          
+          if (profile) {
+            if (profile.full_name) setValue('full_name', profile.full_name);
+            if (profile.age) setValue('age', profile.age);
+            if (profile.gender) setValue('gender', profile.gender);
+            if (profile.weight) setValue('weight', profile.weight);
+            if (profile.height) setValue('height', profile.height);
+            if (profile.health_goal) setValue('health_goal', profile.health_goal);
+            if (profile.weekly_budget) {
+              setValue('weekly_budget', profile.weekly_budget);
+              setBudget(profile.weekly_budget);
+            }
+            if (profile.activity_level) setValue('activity_level', profile.activity_level);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading user info:', error);
+      }
+    };
+    
+    loadUserInfo();
+  }, [setValue]);
   
   const selectedGoal = watch('health_goal');
   

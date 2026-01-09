@@ -360,18 +360,18 @@ export default function DashboardPage() {
           >
             <CardContent className="p-4 flex flex-col justify-between relative overflow-hidden">
               <div className="absolute right-0 top-0 opacity-20 transform translate-x-4 -translate-y-4">
-                <ShoppingBag className="w-24 h-24 text-black" />
+                <ShoppingBag className="w-24 h-24 text-white" />
               </div>
               <div className="z-10">
-                <p className="font-bold text-lg leading-tight text-black">
+                <p className="font-bold text-lg leading-tight text-white">
                   购物清单<br />已准备就绪
                 </p>
               </div>
               <div className="flex justify-between items-end z-10 mt-2">
-                <p className="text-xs font-semibold opacity-80 text-black">
+                <p className="text-xs font-semibold opacity-80 text-white">
                   包含 32 种食材
                 </p>
-                <span className="text-xs bg-black text-primary px-3 py-1.5 rounded-full font-bold">
+                <span className="text-xs bg-white text-primary px-3 py-1.5 rounded-full font-bold">
                   查看清单
                 </span>
               </div>
