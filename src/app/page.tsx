@@ -79,25 +79,46 @@ export default function Home() {
   const [progress, setProgress] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState('');
+  const [isCheckingPlan, setIsCheckingPlan] = useState(true);
   
-  // 检查用户登录状态
+  // 检查用户登录状态和是否已有膳食计划
   useEffect(() => {
-    const checkLoginStatus = async () => {
+    const checkUserAndPlan = async () => {
       try {
         const supabase = createBrowserClient();
         const { data: { user } } = await supabase.auth.getUser();
         
-        if (user && !user.is_anonymous) {
-          setIsLoggedIn(true);
-          setUserName(user.user_metadata?.full_name || user.email?.split('@')[0] || '');
+        if (user) {
+          if (!user.is_anonymous) {
+            setIsLoggedIn(true);
+            setUserName(user.user_metadata?.full_name || user.email?.split('@')[0] || '');
+          }
+          
+          // 检查用户是否已有活跃的膳食计划
+          const { data: mealPlans } = await supabase
+            .from('meal_plans')
+            .select('id, created_at')
+            .eq('user_id', user.id)
+            .eq('is_active', true)
+            .order('created_at', { ascending: false })
+            .limit(1);
+          
+          // 如果有活跃的膳食计划，自动跳转到 dashboard
+          if (mealPlans && mealPlans.length > 0) {
+            console.log('✅ 用户已有膳食计划，跳转到 dashboard');
+            router.push('/dashboard');
+            return;
+          }
         }
       } catch (error) {
-        console.error('Error checking login status:', error);
+        console.error('Error checking user and plan:', error);
+      } finally {
+        setIsCheckingPlan(false);
       }
     };
     
-    checkLoginStatus();
-  }, []);
+    checkUserAndPlan();
+  }, [router]);
   
   const handleSubmit = async (data: any) => {
     setIsLoading(true);
@@ -461,6 +482,21 @@ export default function Home() {
       setIsLoading(false);
     }
   };
+  
+  // 正在检查是否有膳食计划时显示加载界面
+  if (isCheckingPlan) {
+    return (
+      <div className="bg-background-light dark:bg-background-dark min-h-screen flex flex-col transition-colors duration-300">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+            <p className="text-gray-500 dark:text-gray-400">加载中...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="bg-background-light dark:bg-background-dark min-h-screen flex flex-col transition-colors duration-300">
