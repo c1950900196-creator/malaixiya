@@ -66,12 +66,12 @@ export const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ onSubmit, in
             setValue('full_name', fullName);
           }
           
-          // 尝试从 user_profiles 表加载更多信息
+          // 尝试从 user_profiles 表加载更多信息（使用 maybeSingle 避免 406 错误）
           const { data: profile } = await supabase
             .from('user_profiles')
             .select('*')
             .eq('id', user.id)
-            .single();
+            .maybeSingle();
           
           if (profile) {
             if (profile.full_name) setValue('full_name', profile.full_name);

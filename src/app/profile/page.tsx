@@ -50,12 +50,12 @@ export default function ProfilePage() {
         full_name: user.user_metadata?.full_name || '',
       }));
       
-      // 加载用户档案
+      // 加载用户档案（使用 maybeSingle 避免 406 错误）
       const { data: profile } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
       
       if (profile) {
         setFormData(prev => ({
