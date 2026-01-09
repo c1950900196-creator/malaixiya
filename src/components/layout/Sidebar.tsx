@@ -5,13 +5,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { 
-  LayoutDashboard, 
   Calendar, 
   ShoppingCart, 
   BarChart3, 
-  Settings,
-  UtensilsCrossed,
-  User
+  UtensilsCrossed
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -56,18 +53,6 @@ export const Sidebar: React.FC = () => {
           );
         })}
       </nav>
-      
-      <div className="p-4 border-t border-gray-200 dark:border-border-dark">
-        <div className="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-colors cursor-pointer">
-          <div className="w-8 h-8 rounded-full bg-primary/30 flex items-center justify-center">
-            <User className="w-5 h-5 text-primary" />
-          </div>
-          <div className="text-sm">
-            <p className="font-medium text-gray-900 dark:text-white">张伟</p>
-            <p className="text-xs text-gray-500 dark:text-primary">高级会员</p>
-          </div>
-        </div>
-      </div>
     </aside>
   );
 };
