@@ -79,17 +79,6 @@ export default function ShoppingListPage() {
       
       if (itemsError) throw itemsError;
       
-      // 显示购物清单（可能为空）
-      console.log('✅ Shopping list loaded:', itemsData?.length || 0, 'items');
-      console.log('📦 Raw items data:', JSON.stringify(itemsData, null, 2));
-      
-      // 检查每个 item 是否有 notes 字段
-      if (itemsData && itemsData.length > 0) {
-        itemsData.forEach((item: any, idx: number) => {
-          console.log(`📝 Item ${idx + 1}: notes="${item.notes}", category="${item.category}"`);
-        });
-      }
-      
       setItems(itemsData || []);
       setIsLoading(false);
     } catch (error) {

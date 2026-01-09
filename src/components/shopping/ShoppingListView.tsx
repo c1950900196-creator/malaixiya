@@ -102,7 +102,7 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            我的每周购物清单 <span className="text-xs text-red-500">(v3-debug)</span>
+            我的每周购物清单
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             包含7天所需的所有食材 • {purchasedCount} / {items.length} 已购买
@@ -159,13 +159,7 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
             </CardHeader>
             <CardContent>
               <ul className="space-y-3">
-                {groupedItems[category].map((item, idx) => {
-                  // 🔍 调试：打印每个 item 的完整数据
-                  console.log(`🛒 Item ${idx + 1}:`, JSON.stringify(item, null, 2));
-                  console.log(`   notes 字段值: "${item.notes}"`);
-                  console.log(`   显示名称: "${item.notes?.split('|')[0]?.trim() || '未知食材'}"`);
-                  
-                  return (
+                {groupedItems[category].map((item) => (
                   <li key={item.id} className="flex items-start gap-3 group">
                     <Checkbox
                       checked={item.is_purchased}
@@ -200,8 +194,7 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
                       </div>
                     </div>
                   </li>
-                  );
-                })}
+                ))}
               </ul>
             </CardContent>
           </Card>
