@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/layout/Navbar';
 import { ProfileSetupForm } from '@/components/profile/ProfileSetupForm';
@@ -77,6 +77,27 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState('');
   const [progress, setProgress] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState('');
+  
+  // 检查用户登录状态
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const supabase = createBrowserClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user && !user.is_anonymous) {
+          setIsLoggedIn(true);
+          setUserName(user.user_metadata?.full_name || user.email?.split('@')[0] || '');
+        }
+      } catch (error) {
+        console.error('Error checking login status:', error);
+      }
+    };
+    
+    checkLoginStatus();
+  }, []);
   
   const handleSubmit = async (data: any) => {
     setIsLoading(true);
@@ -457,27 +478,35 @@ export default function Home() {
             </div>
           </div>
           
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
-            <p className="text-sm text-blue-800 dark:text-blue-300">
-              💡 <strong>提示：</strong>您可以
-              {' '}
-              <button
-                onClick={() => router.push('/login')}
-                className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
-              >
-                登录
-              </button>
-              {' '}或{' '}
-              <button
-                onClick={() => router.push('/register')}
-                className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
-              >
-                注册
-              </button>
-              {' '}
-              保存您的膳食计划，也可以直接填写下方表单匿名使用。
-            </p>
-          </div>
+          {isLoggedIn ? (
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
+              <p className="text-sm text-green-800 dark:text-green-300">
+                ✅ <strong>欢迎回来{userName ? `，${userName}` : ''}！</strong>您的膳食计划将自动保存到您的账户。
+              </p>
+            </div>
+          ) : (
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+              <p className="text-sm text-blue-800 dark:text-blue-300">
+                💡 <strong>提示：</strong>您可以
+                {' '}
+                <button
+                  onClick={() => router.push('/login')}
+                  className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                >
+                  登录
+                </button>
+                {' '}或{' '}
+                <button
+                  onClick={() => router.push('/register')}
+                  className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                >
+                  注册
+                </button>
+                {' '}
+                保存您的膳食计划，也可以直接填写下方表单匿名使用。
+              </p>
+            </div>
+          )}
         </div>
         <ProfileSetupForm onSubmit={handleSubmit} />
       </main>
