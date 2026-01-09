@@ -2,23 +2,32 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { createBrowserClient } from '@/lib/supabase';
 import { 
   Calendar, 
   ShoppingCart, 
   BarChart3, 
-  UtensilsCrossed
+  UtensilsCrossed,
+  LogOut
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createBrowserClient();
   
   const navItems = [
     { href: '/dashboard', label: '膳食计划', icon: Calendar },
     { href: '/shopping-list', label: '购物清单', icon: ShoppingCart },
     { href: '/analytics', label: '营养分析', icon: BarChart3 },
   ];
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+  };
   
   return (
     <aside className="w-64 bg-white dark:bg-surface-dark border-r border-gray-200 dark:border-border-dark hidden md:flex flex-col flex-shrink-0 z-20">
@@ -53,6 +62,17 @@ export const Sidebar: React.FC = () => {
           );
         })}
       </nav>
+
+      {/* 退出登录按钮 */}
+      <div className="p-4 border-t border-gray-200 dark:border-border-dark">
+        <button
+          onClick={handleLogout}
+          className="flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-colors w-full text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400"
+        >
+          <LogOut className="w-5 h-5" />
+          <span>退出登录</span>
+        </button>
+      </div>
     </aside>
   );
 };
