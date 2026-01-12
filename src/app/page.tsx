@@ -517,12 +517,11 @@ export default function Home() {
       const allMealNames = mealPlan.map(m => m.recipe?.name_zh || m.recipe?.name_en || '').filter(Boolean);
       console.log('📋 所有菜名：', allMealNames);
       
-      // 将 21 个菜名分成 3 组（每组 7 个）
-      const groups = [
-        allMealNames.slice(0, 7),
-        allMealNames.slice(7, 14),
-        allMealNames.slice(14, 21),
-      ].filter(g => g.length > 0);
+      // 将 21 个菜名分成 7 组（每组 3 个，对应每天的3餐）
+      const groups: string[][] = [];
+      for (let i = 0; i < allMealNames.length; i += 3) {
+        groups.push(allMealNames.slice(i, i + 3));
+      }
       
       const allShoppingItems: any[] = [];
       

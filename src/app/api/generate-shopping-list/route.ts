@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
             }
           ],
           temperature: 0.3,
-          max_tokens: 800, // 每次生成约7个菜的食材
+          max_tokens: 400, // 每次生成3个菜的食材
         }),
         signal: controller.signal,
       });
