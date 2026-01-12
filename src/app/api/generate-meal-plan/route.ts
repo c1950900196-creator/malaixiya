@@ -30,31 +30,34 @@ export async function POST(request: NextRequest) {
     console.log('📤 Calling Doubao API for meal plan generation...');
     console.log('🔧 Prompt length:', prompt.length, 'characters');
     
-    // 检查豆包配置
-    if (!process.env.DOUBAO_API_ENDPOINT || !process.env.DOUBAO_API_KEY) {
+    // 豆包 API 配置
+    const apiKey = process.env.DOUBAO_API_KEY || process.env.ARK_API_KEY;
+    const apiEndpoint = process.env.DOUBAO_API_ENDPOINT || 'https://ark.cn-beijing.volces.com/api/v3/chat/completions';
+    
+    if (!apiKey) {
       console.error('❌ Doubao API not configured!');
       return NextResponse.json(
         { 
           error: 'AI API 未配置',
-          message: '豆包 API 未配置。请在环境变量中设置 DOUBAO_API_ENDPOINT 和 DOUBAO_API_KEY'
+          message: '豆包 API 未配置。请在 Vercel 环境变量中设置 ARK_API_KEY 或 DOUBAO_API_KEY'
         },
         { status: 500 }
       );
     }
     
-    console.log('🔧 Using Doubao endpoint:', process.env.DOUBAO_API_ENDPOINT);
-    console.log('🔧 Using model:', process.env.DOUBAO_MODEL);
+    console.log('🔧 Using Doubao endpoint:', apiEndpoint);
+    console.log('🔧 API Key length:', apiKey.length);
     
     // 调用豆包API，使用流式输出
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 55000); // 55秒超时
       
-      const response = await fetch(process.env.DOUBAO_API_ENDPOINT, {
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.DOUBAO_API_KEY}`,
+          'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           model: 'doubao-seed-1-6-flash-250828',
@@ -157,6 +160,20 @@ export async function POST(request: NextRequest) {
       // 清理 JSON 字符串：移除 trailing commas
       jsonString = cleanJsonString(jsonString);
       
+      // 修复多余的括号问题
+      // 有时 AI 会返回多余的 }} 或 ]]
+      jsonString = jsonString.trim();
+      while (jsonString.endsWith('}}') && !jsonString.includes('{{')) {
+        // 检查括号是否平衡
+        const openCount = (jsonString.match(/\{/g) || []).length;
+        const closeCount = (jsonString.match(/\}/g) || []).length;
+        if (closeCount > openCount) {
+          jsonString = jsonString.slice(0, -1);
+        } else {
+          break;
+        }
+      }
+      
       // 解析清理后的 JSON
       let result;
       try {
@@ -164,13 +181,36 @@ export async function POST(request: NextRequest) {
       } catch (parseError) {
         console.error('❌ JSON parse error:', parseError);
         console.error('Content preview:', fullContent.substring(0, 500));
-        return NextResponse.json(
-          { 
-            error: 'AI 响应解析失败',
-            message: 'AI 返回的数据格式不正确，请重试'
-          },
-          { status: 502 }
-        );
+        
+        // 尝试更激进的修复
+        try {
+          // 移除所有多余的结尾括号
+          let fixedJson = jsonString;
+          while (fixedJson.endsWith('}') || fixedJson.endsWith(']')) {
+            const openBraces = (fixedJson.match(/\{/g) || []).length;
+            const closeBraces = (fixedJson.match(/\}/g) || []).length;
+            const openBrackets = (fixedJson.match(/\[/g) || []).length;
+            const closeBrackets = (fixedJson.match(/\]/g) || []).length;
+            
+            if (closeBraces > openBraces) {
+              fixedJson = fixedJson.slice(0, -1).trim();
+            } else if (closeBrackets > openBrackets) {
+              fixedJson = fixedJson.slice(0, -1).trim();
+            } else {
+              break;
+            }
+          }
+          result = JSON.parse(fixedJson);
+          console.log('✅ Fixed JSON successfully');
+        } catch (e) {
+          return NextResponse.json(
+            { 
+              error: 'AI 响应解析失败',
+              message: 'AI 返回的数据格式不正确，请重试'
+            },
+            { status: 502 }
+          );
+        }
       }
       
       if (!result || !result.meals) {

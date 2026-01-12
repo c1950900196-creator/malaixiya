@@ -11,22 +11,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
     }
     
-    // 检查豆包配置
-    if (!process.env.DOUBAO_API_ENDPOINT || !process.env.DOUBAO_API_KEY) {
+    // 豆包 API 配置
+    const apiKey = process.env.DOUBAO_API_KEY || process.env.ARK_API_KEY;
+    const apiEndpoint = process.env.DOUBAO_API_ENDPOINT || 'https://ark.cn-beijing.volces.com/api/v3/chat/completions';
+    
+    if (!apiKey) {
       console.error('❌ Doubao API not configured for shopping list!');
       return NextResponse.json(
         { 
           error: 'AI API not configured',
-          message: '豆包 API 未配置。请在环境变量中设置 DOUBAO_API_ENDPOINT 和 DOUBAO_API_KEY'
+          message: '豆包 API 未配置。请在 Vercel 环境变量中设置 ARK_API_KEY 或 DOUBAO_API_KEY'
         },
         { status: 500 }
       );
     }
     
-    console.log('🔧 Using Doubao endpoint for shopping list:', process.env.DOUBAO_API_ENDPOINT);
-    console.log('🔧 Using model:', process.env.DOUBAO_MODEL);
-    console.log('🔧 API Key length:', process.env.DOUBAO_API_KEY?.length || 0);
-    console.log('🔧 API Key prefix:', process.env.DOUBAO_API_KEY?.substring(0, 10) || 'N/A');
+    console.log('🔧 Using Doubao endpoint for shopping list:', apiEndpoint);
+    console.log('🔧 API Key length:', apiKey.length);
     
     // 调用豆包API（添加超时处理，与膳食计划API保持一致）
     let response;
@@ -34,11 +35,11 @@ export async function POST(request: NextRequest) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 25000); // 25秒超时
       
-      response = await fetch(process.env.DOUBAO_API_ENDPOINT, {
+      response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.DOUBAO_API_KEY}`,
+          'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           model: 'doubao-seed-1-6-flash-250828',
@@ -86,8 +87,8 @@ export async function POST(request: NextRequest) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ Doubao API error for shopping list:', response.status, errorText);
-      console.error('🔍 Request URL:', process.env.DOUBAO_API_ENDPOINT);
-      console.error('🔍 API Key prefix:', process.env.DOUBAO_API_KEY?.substring(0, 15) || 'N/A');
+      console.error('🔍 Request URL:', apiEndpoint);
+      console.error('🔍 API Key length:', apiKey.length);
       return NextResponse.json(
         { error: 'AI generation failed', details: errorText },
         { status: response.status }
