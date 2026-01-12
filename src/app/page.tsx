@@ -450,6 +450,38 @@ export default function Home() {
       }));
       setPlanDetails(detailsWithRecipes as any);
       
+      setProgress(80);
+      setLoadingStep('正在生成购物清单...');
+      
+      // 单独调用 API 生成购物清单
+      const mealNames = mealPlan.map(m => m.recipe?.name_zh || m.recipe?.name_en || '').filter(Boolean);
+      const shoppingPrompt = `根据以下7天马来西亚膳食计划生成购物清单：${mealNames.join('、')}
+
+返回JSON格式：
+{"items":[{"name":"大米","name_en":"Rice","category":"主食","quantity":3000,"unit":"g","price":12},{"name":"鸡肉","name_en":"Chicken","category":"肉类","quantity":1500,"unit":"g","price":18}]}
+
+只返回购物清单JSON，包含20-30种食材。`;
+
+      try {
+        const shoppingResponse = await fetch('/api/generate-shopping-list', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: shoppingPrompt }),
+        });
+        
+        if (shoppingResponse.ok) {
+          const shoppingResult = await shoppingResponse.json();
+          if (shoppingResult.items && shoppingResult.items.length > 0) {
+            console.log('✅ AI 生成购物清单：', shoppingResult.items.length, '项');
+            await saveShoppingListFromAI(user.id, planData.id, shoppingResult.items, supabase);
+          }
+        } else {
+          console.warn('⚠️ 购物清单生成失败，但膳食计划已保存');
+        }
+      } catch (shoppingError) {
+        console.warn('⚠️ 购物清单生成出错，但膳食计划已保存:', shoppingError);
+      }
+      
       setProgress(100);
       setLoadingStep('膳食计划创建成功！');
       
@@ -457,14 +489,6 @@ export default function Home() {
       setTimeout(() => {
         router.push('/dashboard');
       }, 500);
-      
-      // 如果 AI 返回了购物清单，直接保存（不需要再调用 API）
-      if (aiResult.shopping_list && aiResult.shopping_list.length > 0) {
-        console.log('✅ AI 已生成购物清单，直接保存');
-        saveShoppingListFromAI(user.id, planData.id, aiResult.shopping_list, supabase);
-      } else {
-        console.log('⚠️ AI 未返回购物清单，跳过保存');
-      }
     } catch (error: any) {
       console.error('Error saving profile:', error);
       
