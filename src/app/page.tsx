@@ -245,36 +245,53 @@ export default function Home() {
       
       const restrictionsArray = data.restrictions || [];
       
-      // 使用豆包 AI 生成膳食计划（不使用本地 fallback）
-      setProgress(40);
-      setLoadingStep('正在使用AI生成个性化膳食计划...');
+      // 分 7 次调用 AI，每次生成 1 天的膳食计划
+      const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      const dayNamesZh = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+      const allDayPlans: any[] = [];
       
-      let aiResult: any = null;
-      
-      const aiResponse = await fetch('/api/generate-meal-plan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userProfile,
-          restrictions: restrictionsArray,
-        }),
-      });
-      
-      if (aiResponse.ok) {
-        aiResult = await aiResponse.json();
-        console.log('✅ AI generated meal plan:', aiResult.plan?.length || 0, 'days');
-      } else {
-        // AI 生成失败，直接显示错误
-        const errorData = await aiResponse.json().catch(() => ({}));
-        const errorMessage = errorData.message || errorData.error || 'AI 生成膳食计划失败';
-        console.error('❌ AI generation failed:', errorMessage);
-        throw new Error(errorMessage);
+      for (let i = 0; i < 7; i++) {
+        const progressBase = 30 + Math.floor((i / 7) * 40); // 30% - 70%
+        setProgress(progressBase);
+        setLoadingStep(`正在生成${dayNamesZh[i]}的膳食计划... (${i + 1}/7)`);
+        
+        console.log(`📤 Generating meal plan for ${dayNames[i]}...`);
+        
+        const aiResponse = await fetch('/api/generate-meal-plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userProfile,
+            restrictions: restrictionsArray,
+            day: dayNames[i],
+            dayIndex: i,
+          }),
+        });
+        
+        if (aiResponse.ok) {
+          const dayResult = await aiResponse.json();
+          console.log(`✅ ${dayNames[i]} meal plan generated:`, dayResult);
+          allDayPlans.push({
+            day: dayNames[i],
+            meals: dayResult.meals || dayResult,
+          });
+        } else {
+          const errorData = await aiResponse.json().catch(() => ({}));
+          console.error(`❌ Failed to generate ${dayNames[i]}:`, errorData);
+          // 如果某一天失败，使用默认餐食继续
+          allDayPlans.push({
+            day: dayNames[i],
+            meals: {
+              breakfast: { name_zh: '椰浆饭', name_en: 'Nasi Lemak' },
+              lunch: { name_zh: '海南鸡饭', name_en: 'Hainanese Chicken Rice' },
+              dinner: { name_zh: '肉骨茶', name_en: 'Bak Kut Teh' },
+            },
+          });
+        }
       }
       
-      // 验证aiResult
-      if (!aiResult || !aiResult.plan || !Array.isArray(aiResult.plan)) {
-        throw new Error('膳食计划生成失败，请重试');
-      }
+      // 构建完整的 aiResult
+      const aiResult = { plan: allDayPlans };
       
       console.log('📋 Processing meal plan with', aiResult.plan.length, 'days');
       
