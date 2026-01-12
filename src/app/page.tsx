@@ -278,14 +278,19 @@ export default function Home() {
         } else {
           const errorData = await aiResponse.json().catch(() => ({}));
           console.error(`❌ Failed to generate ${dayNames[i]}:`, errorData);
-          // 如果某一天失败，使用默认餐食继续
+          // 如果某一天失败，使用不同的默认餐食
+          const fallbackMeals = [
+            { breakfast: { name_zh: '椰浆饭', name_en: 'Nasi Lemak' }, lunch: { name_zh: '海南鸡饭', name_en: 'Hainanese Chicken Rice' }, dinner: { name_zh: '肉骨茶', name_en: 'Bak Kut Teh' } },
+            { breakfast: { name_zh: '咖椰吐司', name_en: 'Kaya Toast' }, lunch: { name_zh: '叻沙', name_en: 'Laksa' }, dinner: { name_zh: '沙爹', name_en: 'Satay' } },
+            { breakfast: { name_zh: '印度煎饼', name_en: 'Roti Canai' }, lunch: { name_zh: '炒粿条', name_en: 'Char Kway Teow' }, dinner: { name_zh: '咖喱鸡', name_en: 'Curry Chicken' } },
+            { breakfast: { name_zh: '云吞面', name_en: 'Wonton Noodles' }, lunch: { name_zh: '福建面', name_en: 'Hokkien Mee' }, dinner: { name_zh: '仁当牛肉', name_en: 'Beef Rendang' } },
+            { breakfast: { name_zh: '炒米粉', name_en: 'Fried Bee Hoon' }, lunch: { name_zh: '板面', name_en: 'Pan Mee' }, dinner: { name_zh: '亚参鱼', name_en: 'Asam Fish' } },
+            { breakfast: { name_zh: '粥', name_en: 'Congee' }, lunch: { name_zh: '咖喱面', name_en: 'Curry Mee' }, dinner: { name_zh: '参巴虾', name_en: 'Sambal Prawns' } },
+            { breakfast: { name_zh: '娘惹糕', name_en: 'Nyonya Kuih' }, lunch: { name_zh: '酿豆腐', name_en: 'Yong Tau Foo' }, dinner: { name_zh: '烧鸡', name_en: 'Roast Chicken' } },
+          ];
           allDayPlans.push({
             day: dayNames[i],
-            meals: {
-              breakfast: { name_zh: '椰浆饭', name_en: 'Nasi Lemak' },
-              lunch: { name_zh: '海南鸡饭', name_en: 'Hainanese Chicken Rice' },
-              dinner: { name_zh: '肉骨茶', name_en: 'Bak Kut Teh' },
-            },
+            meals: fallbackMeals[i % fallbackMeals.length],
           });
         }
       }
