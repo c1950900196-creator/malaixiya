@@ -20,27 +20,12 @@ export async function POST(request: NextRequest) {
     const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const dayName = day || dayNames[dayIndex] || 'Monday';
     
-    // 马来西亚菜品列表，用于提示 AI 生成多样化的菜品
-    const malaysianDishes = [
-      '椰浆饭', '炒粿条', '肉骨茶', '海南鸡饭', '叻沙', '沙爹', '咖喱面',
-      '福建面', '云吞面', '板面', '炒米粉', '印度煎饼', '咖椰吐司',
-      '娘惹糕', '仁当牛肉', '亚参鱼', '咖喱鸡', '参巴虾', '酿豆腐'
-    ];
-    
-    // 根据 dayIndex 选择不同的推荐菜品，确保每天不同
-    const dayOffset = dayIndex || 0;
-    const suggestedBreakfast = malaysianDishes[(dayOffset * 3) % malaysianDishes.length];
-    const suggestedLunch = malaysianDishes[(dayOffset * 3 + 1) % malaysianDishes.length];
-    const suggestedDinner = malaysianDishes[(dayOffset * 3 + 2) % malaysianDishes.length];
-    
-    // 构建给豆包的提示词 - 只生成 1 天的膳食计划
+    // 构建给豆包的提示词 - 只生成 1 天的膳食计划，不给示例让AI自己想
     const prompt = `为${userProfile.age}岁${userProfile.gender}（目标：${userProfile.health_goal}${restrictions && restrictions.length > 0 ? `，限制：${restrictions.join('、')}` : ''}）生成${dayName}的马来西亚膳食计划。
 
-要求：每餐选择不同的马来西亚特色菜，建议参考：早餐${suggestedBreakfast}、午餐${suggestedLunch}、晚餐${suggestedDinner}，但可以选择其他菜品。
+要求：选择3种不同的马来西亚特色菜作为早餐、午餐、晚餐。每天的菜品要有变化，不要重复。
 
-返回JSON格式：{"day":"${dayName}","meals":{"breakfast":{"name_zh":"菜名","name_en":"English Name"},"lunch":{"name_zh":"菜名","name_en":"English Name"},"dinner":{"name_zh":"菜名","name_en":"English Name"}}}
-
-只返回JSON，不要解释。`;
+返回JSON：{"day":"${dayName}","meals":{"breakfast":{"name_zh":"中文名","name_en":"英文名"},"lunch":{"name_zh":"中文名","name_en":"英文名"},"dinner":{"name_zh":"中文名","name_en":"英文名"}}}`;
 
     console.log('📤 Calling Doubao API for meal plan generation...');
     console.log('🔧 Prompt length:', prompt.length, 'characters');

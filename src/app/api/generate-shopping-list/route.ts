@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
             }
           ],
           temperature: 0.3,
-          max_tokens: 1200, // 降低到 1200，加快响应速度
+          max_tokens: 300, // 每次只生成3-5种食材
         }),
         signal: controller.signal,
       });

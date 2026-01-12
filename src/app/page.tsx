@@ -472,36 +472,52 @@ export default function Home() {
       }));
       setPlanDetails(detailsWithRecipes as any);
       
-      setProgress(80);
+      setProgress(75);
       setLoadingStep('正在生成购物清单...');
       
-      // 单独调用 API 生成购物清单
-      const mealNames = mealPlan.map(m => m.recipe?.name_zh || m.recipe?.name_en || '').filter(Boolean);
-      const shoppingPrompt = `根据以下7天马来西亚膳食计划生成购物清单：${mealNames.join('、')}
-
-返回JSON格式：
-{"items":[{"name":"大米","name_en":"Rice","category":"主食","quantity":3000,"unit":"g","price":12},{"name":"鸡肉","name_en":"Chicken","category":"肉类","quantity":1500,"unit":"g","price":18}]}
-
-只返回购物清单JSON，包含20-30种食材。`;
-
-      try {
-        const shoppingResponse = await fetch('/api/generate-shopping-list', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: shoppingPrompt }),
-        });
+      // 拆分成7天，每天生成一部分购物清单
+      const allShoppingItems: any[] = [];
+      
+      for (let i = 0; i < 7; i++) {
+        const dayMeals = mealPlan.filter((_, index) => Math.floor(index / 3) === i);
+        const dayMealNames = dayMeals.map(m => m.recipe?.name_zh || m.recipe?.name_en || '').filter(Boolean);
         
-        if (shoppingResponse.ok) {
-          const shoppingResult = await shoppingResponse.json();
-          if (shoppingResult.items && shoppingResult.items.length > 0) {
-            console.log('✅ AI 生成购物清单：', shoppingResult.items.length, '项');
-            await saveShoppingListFromAI(user.id, planData.id, shoppingResult.items, supabase);
+        if (dayMealNames.length === 0) continue;
+        
+        setProgress(75 + Math.floor((i / 7) * 20));
+        setLoadingStep(`正在生成${dayNamesZh[i]}的食材清单... (${i + 1}/7)`);
+        
+        const shoppingPrompt = `根据以下马来西亚菜品列出需要购买的食材：${dayMealNames.join('、')}
+
+返回JSON：{"items":[{"name":"食材中文名","name_en":"英文名","category":"分类","quantity":数量,"unit":"单位","price":价格}]}
+
+只返回3-5种主要食材。`;
+
+        try {
+          const shoppingResponse = await fetch('/api/generate-shopping-list', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: shoppingPrompt }),
+          });
+          
+          if (shoppingResponse.ok) {
+            const shoppingResult = await shoppingResponse.json();
+            if (shoppingResult.items && shoppingResult.items.length > 0) {
+              console.log(`✅ ${dayNames[i]} 购物清单：`, shoppingResult.items.length, '项');
+              allShoppingItems.push(...shoppingResult.items);
+            }
+          } else {
+            console.warn(`⚠️ ${dayNames[i]} 购物清单生成失败`);
           }
-        } else {
-          console.warn('⚠️ 购物清单生成失败，但膳食计划已保存');
+        } catch (shoppingError) {
+          console.warn(`⚠️ ${dayNames[i]} 购物清单生成出错:`, shoppingError);
         }
-      } catch (shoppingError) {
-        console.warn('⚠️ 购物清单生成出错，但膳食计划已保存:', shoppingError);
+      }
+      
+      // 保存所有购物清单
+      if (allShoppingItems.length > 0) {
+        console.log('✅ 总共生成购物清单：', allShoppingItems.length, '项');
+        await saveShoppingListFromAI(user.id, planData.id, allShoppingItems, supabase);
       }
       
       setProgress(100);
