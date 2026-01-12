@@ -70,6 +70,44 @@ async function saveShoppingListFromAI(userId: string, mealPlanId: string, shoppi
   }
 }
 
+// 合并、去重、汇总购物清单
+function mergeShoppingItems(items: any[]): any[] {
+  const merged = new Map<string, any>();
+  
+  for (const item of items) {
+    const name = item.name || item.name_zh || '';
+    if (!name) continue;
+    
+    const key = name.toLowerCase().trim();
+    
+    if (merged.has(key)) {
+      // 已存在，累加数量
+      const existing = merged.get(key);
+      const existingQty = parseFloat(existing.quantity) || 0;
+      const newQty = parseFloat(item.quantity) || 0;
+      existing.quantity = existingQty + newQty;
+      // 取较高的价格
+      const existingPrice = parseFloat(existing.price) || 0;
+      const newPrice = parseFloat(item.price) || 0;
+      if (newPrice > existingPrice) {
+        existing.price = newPrice;
+      }
+    } else {
+      // 新增
+      merged.set(key, {
+        name: name,
+        name_en: item.name_en || '',
+        category: item.category || '其他',
+        quantity: parseFloat(item.quantity) || 1,
+        unit: item.unit || '份',
+        price: parseFloat(item.price) || 0,
+      });
+    }
+  }
+  
+  return Array.from(merged.values());
+}
+
 export default function Home() {
   const router = useRouter();
   const { setProfile, setRestrictions } = useUserStore();
@@ -475,23 +513,30 @@ export default function Home() {
       setProgress(75);
       setLoadingStep('正在生成购物清单...');
       
-      // 拆分成7天，每天生成一部分购物清单
+      // 收集所有菜名
+      const allMealNames = mealPlan.map(m => m.recipe?.name_zh || m.recipe?.name_en || '').filter(Boolean);
+      console.log('📋 所有菜名：', allMealNames);
+      
+      // 将 21 个菜名分成 3 组（每组 7 个）
+      const groups = [
+        allMealNames.slice(0, 7),
+        allMealNames.slice(7, 14),
+        allMealNames.slice(14, 21),
+      ].filter(g => g.length > 0);
+      
       const allShoppingItems: any[] = [];
       
-      for (let i = 0; i < 7; i++) {
-        const dayMeals = mealPlan.filter((_, index) => Math.floor(index / 3) === i);
-        const dayMealNames = dayMeals.map(m => m.recipe?.name_zh || m.recipe?.name_en || '').filter(Boolean);
+      // 分 3 次调用 AI，每次获取一组菜的食材清单
+      for (let i = 0; i < groups.length; i++) {
+        setProgress(75 + Math.floor((i / groups.length) * 20));
+        setLoadingStep(`正在生成食材清单... (${i + 1}/${groups.length})`);
         
-        if (dayMealNames.length === 0) continue;
-        
-        setProgress(75 + Math.floor((i / 7) * 20));
-        setLoadingStep(`正在生成${dayNamesZh[i]}的食材清单... (${i + 1}/7)`);
-        
-        const shoppingPrompt = `根据以下马来西亚菜品列出需要购买的食材：${dayMealNames.join('、')}
+        const groupMeals = groups[i];
+        const shoppingPrompt = `列出制作以下马来西亚菜品需要的食材：${groupMeals.join('、')}
 
-返回JSON：{"items":[{"name":"食材中文名","name_en":"英文名","category":"分类","quantity":数量,"unit":"单位","price":价格}]}
+返回JSON：{"items":[{"name":"食材名","category":"分类","quantity":数量,"unit":"单位","price":单价}]}
 
-只返回3-5种主要食材。`;
+要求：列出所有主要食材，每种食材只出现一次。`;
 
         try {
           const shoppingResponse = await fetch('/api/generate-shopping-list', {
@@ -503,21 +548,24 @@ export default function Home() {
           if (shoppingResponse.ok) {
             const shoppingResult = await shoppingResponse.json();
             if (shoppingResult.items && shoppingResult.items.length > 0) {
-              console.log(`✅ ${dayNames[i]} 购物清单：`, shoppingResult.items.length, '项');
+              console.log(`✅ 第 ${i + 1} 组购物清单：`, shoppingResult.items.length, '项');
               allShoppingItems.push(...shoppingResult.items);
             }
           } else {
-            console.warn(`⚠️ ${dayNames[i]} 购物清单生成失败`);
+            console.warn(`⚠️ 第 ${i + 1} 组购物清单生成失败`);
           }
         } catch (shoppingError) {
-          console.warn(`⚠️ ${dayNames[i]} 购物清单生成出错:`, shoppingError);
+          console.warn(`⚠️ 第 ${i + 1} 组购物清单生成出错:`, shoppingError);
         }
       }
       
-      // 保存所有购物清单
-      if (allShoppingItems.length > 0) {
-        console.log('✅ 总共生成购物清单：', allShoppingItems.length, '项');
-        await saveShoppingListFromAI(user.id, planData.id, allShoppingItems, supabase);
+      // 用 JavaScript 合并、去重、汇总数量
+      const mergedItems = mergeShoppingItems(allShoppingItems);
+      console.log('✅ 合并后购物清单：', mergedItems.length, '项');
+      
+      // 保存购物清单
+      if (mergedItems.length > 0) {
+        await saveShoppingListFromAI(user.id, planData.id, mergedItems, supabase);
       }
       
       setProgress(100);
