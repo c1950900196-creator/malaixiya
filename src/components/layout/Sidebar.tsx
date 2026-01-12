@@ -16,6 +16,7 @@ import {
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
+  
   const supabase = createBrowserClient();
   
   const navItems = [

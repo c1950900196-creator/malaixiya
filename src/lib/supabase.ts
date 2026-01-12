@@ -9,7 +9,14 @@ export const supabase = supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
-// 客户端组件使用
-export const createBrowserClient = () => createClientComponentClient();
+// 客户端组件使用 - 单例模式，避免创建多个实例
+let browserClient: ReturnType<typeof createClientComponentClient> | null = null;
+
+export const createBrowserClient = () => {
+  if (!browserClient) {
+    browserClient = createClientComponentClient();
+  }
+  return browserClient;
+};
 
 
