@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
           'Authorization': `Bearer ${process.env.DOUBAO_API_KEY}`,
         },
         body: JSON.stringify({
-          model: process.env.DOUBAO_MODEL || 'doubao-seed-1-6-lite-251015',
+          model: 'doubao-seed-1-6-flash-250828',
           messages: [
             {
               role: 'system',
@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
           temperature: 0.7,
           max_tokens: 300,
           stream: true,
+          thinking: { type: 'disabled' }, // 关闭深度思考
         }),
         signal: controller.signal,
       });
