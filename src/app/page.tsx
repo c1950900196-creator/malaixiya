@@ -70,6 +70,65 @@ async function saveShoppingListFromAI(userId: string, mealPlanId: string, shoppi
   }
 }
 
+// 默认价格表（马来西亚令吉）
+const DEFAULT_PRICES: Record<string, number> = {
+  // 肉类
+  '鸡肉': 12, '牛肉': 35, '羊肉': 40, '猪肉': 18, '鸭肉': 20,
+  '鸡腿': 10, '鸡胸': 12, '鸡翅': 8, '排骨': 25,
+  // 海鲜
+  '虾': 25, '鱼': 15, '蟹': 45, '鱿鱼': 18, '贝类': 20,
+  // 蔬菜
+  '白菜': 3, '菠菜': 4, '生菜': 3, '西兰花': 6, '胡萝卜': 2,
+  '洋葱': 3, '大蒜': 5, '姜': 4, '辣椒': 3, '番茄': 4,
+  '黄瓜': 3, '茄子': 4, '豆芽': 2, '空心菜': 3, '芥蓝': 5,
+  // 主食
+  '米饭': 8, '面条': 5, '米粉': 4, '面包': 6, '椰浆饭': 3,
+  // 调味料
+  '酱油': 6, '盐': 2, '糖': 4, '醋': 5, '咖喱粉': 8,
+  '椰浆': 5, '虾酱': 10, '参巴酱': 8, '花生酱': 12,
+  // 其他
+  '鸡蛋': 8, '豆腐': 4, '豆干': 5, '花生': 8, '椰子': 6,
+};
+
+// 根据名称获取默认价格
+function getDefaultPrice(name: string, category: string): number {
+  // 先尝试精确匹配
+  for (const [key, price] of Object.entries(DEFAULT_PRICES)) {
+    if (name.includes(key)) return price;
+  }
+  // 按分类给默认价格
+  const categoryPrices: Record<string, number> = {
+    '肉类': 20, '海鲜': 25, '蔬菜': 4, '调味料': 6, '主食': 5,
+    '肉类 & 海鲜': 22, '新鲜蔬菜': 4, '谷物 & 主食': 5, '水果': 6,
+    '乳制品': 8, '菜品': 15, '小吃': 8, '主菜': 20, '其他': 5,
+  };
+  return categoryPrices[category] || 5;
+}
+
+// 预设购物清单模板（马来西亚常见食材）
+function getDefaultShoppingList(): any[] {
+  return [
+    // 菜品（成品菜）
+    { name: '椰浆饭', category: '菜品', quantity: 2, unit: '份', price: 8 },
+    { name: '沙爹串', category: '小吃', quantity: 2, unit: '份', price: 12 },
+    { name: '肉骨茶', category: '主菜', quantity: 1, unit: '份', price: 25 },
+    { name: '马来炒面', category: '主菜', quantity: 1, unit: '份', price: 10 },
+    { name: '叻沙', category: '主菜', quantity: 1, unit: '份', price: 12 },
+    { name: '仁当鸡', category: '主菜', quantity: 1, unit: '份', price: 18 },
+    { name: '咖喱鸡', category: '主菜', quantity: 1, unit: '份', price: 15 },
+    // 蔬菜
+    { name: '空心菜', category: '新鲜蔬菜', quantity: 500, unit: 'g', price: 4 },
+    { name: '豆芽', category: '新鲜蔬菜', quantity: 300, unit: 'g', price: 3 },
+    { name: '黄瓜', category: '新鲜蔬菜', quantity: 2, unit: '根', price: 3 },
+    // 调味料
+    { name: '椰浆', category: '调味料', quantity: 2, unit: '罐', price: 8 },
+    { name: '参巴酱', category: '调味料', quantity: 1, unit: '瓶', price: 10 },
+    // 蛋白质
+    { name: '鸡蛋', category: '肉类 & 海鲜', quantity: 10, unit: '个', price: 8 },
+    { name: '虾', category: '肉类 & 海鲜', quantity: 500, unit: 'g', price: 25 },
+  ];
+}
+
 // 合并、去重、汇总购物清单
 function mergeShoppingItems(items: any[]): any[] {
   const merged = new Map<string, any>();
@@ -79,6 +138,10 @@ function mergeShoppingItems(items: any[]): any[] {
     if (!name) continue;
     
     const key = name.toLowerCase().trim();
+    const category = item.category || '其他';
+    
+    // 如果没有价格，使用默认价格
+    const price = parseFloat(item.price) || getDefaultPrice(name, category);
     
     if (merged.has(key)) {
       // 已存在，累加数量
@@ -87,20 +150,18 @@ function mergeShoppingItems(items: any[]): any[] {
       const newQty = parseFloat(item.quantity) || 0;
       existing.quantity = existingQty + newQty;
       // 取较高的价格
-      const existingPrice = parseFloat(existing.price) || 0;
-      const newPrice = parseFloat(item.price) || 0;
-      if (newPrice > existingPrice) {
-        existing.price = newPrice;
+      if (price > existing.price) {
+        existing.price = price;
       }
     } else {
       // 新增
       merged.set(key, {
         name: name,
         name_en: item.name_en || '',
-        category: item.category || '其他',
+        category: category,
         quantity: parseFloat(item.quantity) || 1,
         unit: item.unit || '份',
-        price: parseFloat(item.price) || 0,
+        price: price,
       });
     }
   }
@@ -559,12 +620,26 @@ export default function Home() {
       }
       
       // 用 JavaScript 合并、去重、汇总数量
-      const mergedItems = mergeShoppingItems(allShoppingItems);
+      let mergedItems = mergeShoppingItems(allShoppingItems);
       console.log('✅ 合并后购物清单：', mergedItems.length, '项');
       
-      // 保存购物清单
+      // 如果 AI 生成失败或数量太少，使用预设模板
+      if (mergedItems.length < 5) {
+        console.log('⚠️ AI 生成的购物清单太少，使用预设模板');
+        const defaultItems = getDefaultShoppingList();
+        // 合并 AI 生成的和预设的
+        mergedItems = mergeShoppingItems([...mergedItems, ...defaultItems]);
+        console.log('✅ 使用预设模板后购物清单：', mergedItems.length, '项');
+      }
+      
+      // 保存购物清单（即使为空也保存预设的）
       if (mergedItems.length > 0) {
         await saveShoppingListFromAI(user.id, planData.id, mergedItems, supabase);
+      } else {
+        // 如果完全没有数据，使用预设模板
+        console.log('⚠️ 没有购物清单数据，使用完整预设模板');
+        const defaultItems = getDefaultShoppingList();
+        await saveShoppingListFromAI(user.id, planData.id, defaultItems, supabase);
       }
       
       setProgress(100);
