@@ -4,14 +4,11 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-// 验证 Supabase URL 格式
+// 验证 Supabase URL 格式（只打印警告，不抛出错误）
 if (supabaseUrl && supabaseUrl.includes('/dashboard/')) {
-  throw new Error(
-    `❌ 错误的 Supabase URL 配置！\n` +
-    `当前值: ${supabaseUrl}\n` +
-    `这是 Dashboard URL，不是 API URL。\n` +
-    `正确格式应该是: https://项目ID.supabase.co\n` +
-    `请在 Vercel 中修改 NEXT_PUBLIC_SUPABASE_URL 环境变量`
+  console.error(
+    `❌ 错误的 Supabase URL 配置！当前值: ${supabaseUrl}。` +
+    `应该是 https://项目ID.supabase.co 格式`
   );
 }
 
