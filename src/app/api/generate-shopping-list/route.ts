@@ -17,13 +17,8 @@ export async function POST(request: NextRequest) {
     
     if (!apiKey) {
       console.error('❌ Doubao API not configured for shopping list!');
-      return NextResponse.json(
-        { 
-          error: 'AI API not configured',
-          message: '豆包 API 未配置。请在 Vercel 环境变量中设置 ARK_API_KEY 或 DOUBAO_API_KEY'
-        },
-        { status: 500 }
-      );
+      // 返回空数组，让前端使用预设模板
+      return NextResponse.json({ items: [] });
     }
     
     console.log('🔧 Using Doubao endpoint for shopping list:', apiEndpoint);
@@ -63,36 +58,17 @@ export async function POST(request: NextRequest) {
       clearTimeout(timeoutId);
     } catch (fetchError: any) {
       console.error('❌ Network error calling Doubao for shopping list:', fetchError);
-      
-      // 检查是否是超时错误
-      if (fetchError.name === 'AbortError') {
-        return NextResponse.json(
-          { 
-            error: 'Timeout',
-            message: '豆包 API 响应超时（超过60秒）。请检查网络连接或稍后重试。'
-          },
-          { status: 504 }
-        );
-      }
-      
-      return NextResponse.json(
-        { 
-          error: 'Network error',
-          message: `无法连接到豆包 API: ${fetchError.message}`
-        },
-        { status: 500 }
-      );
+      // 网络错误时返回空数组，让前端使用预设模板
+      console.log('⚠️ 网络错误，返回空数组');
+      return NextResponse.json({ items: [] });
     }
     
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ Doubao API error for shopping list:', response.status, errorText);
-      console.error('🔍 Request URL:', apiEndpoint);
-      console.error('🔍 API Key length:', apiKey.length);
-      return NextResponse.json(
-        { error: 'AI generation failed', details: errorText },
-        { status: response.status }
-      );
+      // API 错误时返回空数组，让前端使用预设模板
+      console.log('⚠️ API 返回错误，返回空数组');
+      return NextResponse.json({ items: [] });
     }
     
     const data = await response.json();
@@ -141,24 +117,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(result);
     } catch (parseError) {
       console.error('JSON parse error:', parseError);
-      console.error('Content:', content.substring(0, 500)); // 只打印前500字符
+      console.error('Content:', content.substring(0, 500));
       
-      // 如果解析失败，尝试手动构造一个基本的购物清单
-      return NextResponse.json(
-        { 
-          error: 'Failed to parse AI response', 
-          message: 'AI返回的格式无法解析，请重试',
-          rawContent: content.substring(0, 200)
-        },
-        { status: 500 }
-      );
+      // 解析失败时返回空数组，让前端使用预设模板
+      console.log('⚠️ 返回空数组，前端将使用预设模板');
+      return NextResponse.json({ items: [] });
     }
   } catch (error: any) {
     console.error('Shopping list generation error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error', message: error.message },
-      { status: 500 }
-    );
+    // 出错时也返回空数组，而不是 500 错误
+    console.log('⚠️ API 出错，返回空数组');
+    return NextResponse.json({ items: [] });
   }
 }
 
