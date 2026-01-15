@@ -172,8 +172,7 @@ export async function POST(request: NextRequest) {
             name_ms,
             category,
             unit,
-            avg_price_per_unit,
-            allergens
+            avg_price_per_unit
           )
         `)
         .in('recipe_id', recipeIds);
@@ -228,7 +227,6 @@ export async function POST(request: NextRequest) {
               quantity: quantity,
               unit: ri.unit || ingredient.unit,
               estimated_price: ingredient.avg_price_per_unit * quantity,
-              allergens: ingredient.allergens || [],
             });
           }
         }
