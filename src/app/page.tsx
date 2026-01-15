@@ -360,6 +360,7 @@ export default function Home() {
           restrictions: restrictionsArray,
           days: 7,
           peopleCount: data.people_count || 2,
+          weeklyBudget: data.weekly_budget || null,
         }),
       });
       

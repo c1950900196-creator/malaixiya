@@ -11,9 +11,9 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userProfile, restrictions, days = 7, peopleCount = 2 } = body;
+    const { userProfile, restrictions, days = 7, peopleCount = 2, weeklyBudget } = body;
 
-    console.log('📦 生成膳食计划请求:', { days, peopleCount, restrictions });
+    console.log('📦 生成膳食计划请求:', { days, peopleCount, restrictions, weeklyBudget });
 
     if (!supabaseUrl || !supabaseServiceKey) {
       return NextResponse.json(
@@ -57,11 +57,36 @@ export async function POST(request: NextRequest) {
 
     console.log(`✅ 查询到 ${allRecipes.length} 道菜品`);
 
+    // 根据预算过滤菜品（如果提供了预算）
+    let filteredRecipes = allRecipes;
+    if (weeklyBudget && weeklyBudget > 0) {
+      // 计算每餐平均预算 (7天 * 3餐 = 21餐)
+      const avgBudgetPerMeal = (weeklyBudget / (days * 3)) * peopleCount;
+      console.log(`💰 每餐平均预算: RM ${avgBudgetPerMeal.toFixed(2)}`);
+      
+      // 过滤出预算范围内的菜品（允许±30%的弹性）
+      const budgetMin = avgBudgetPerMeal * 0.5;  // 最低50%
+      const budgetMax = avgBudgetPerMeal * 1.5;  // 最高150%
+      
+      filteredRecipes = allRecipes.filter(r => {
+        const cost = r.estimated_cost || 0;
+        return cost >= budgetMin && cost <= budgetMax;
+      });
+      
+      console.log(`💰 预算过滤后剩余 ${filteredRecipes.length} 道菜品 (预算范围: RM${budgetMin.toFixed(2)} - RM${budgetMax.toFixed(2)})`);
+      
+      // 如果过滤后菜品太少，放宽限制
+      if (filteredRecipes.length < 15) {
+        console.warn('⚠️ 预算范围内菜品太少，扩大搜索范围');
+        filteredRecipes = allRecipes;
+      }
+    }
+
     // 按 meal_type 分组 (meal_type 是数组类型，需要用 includes 检查)
-    const breakfasts = allRecipes.filter(r => r.meal_type && r.meal_type.includes('breakfast'));
-    const lunches = allRecipes.filter(r => r.meal_type && r.meal_type.includes('lunch'));
-    const dinners = allRecipes.filter(r => r.meal_type && r.meal_type.includes('dinner'));
-    const snacks = allRecipes.filter(r => r.meal_type && r.meal_type.includes('snack'));
+    const breakfasts = filteredRecipes.filter(r => r.meal_type && r.meal_type.includes('breakfast'));
+    const lunches = filteredRecipes.filter(r => r.meal_type && r.meal_type.includes('lunch'));
+    const dinners = filteredRecipes.filter(r => r.meal_type && r.meal_type.includes('dinner'));
+    const snacks = filteredRecipes.filter(r => r.meal_type && r.meal_type.includes('snack'));
 
     console.log(`早餐: ${breakfasts.length}, 午餐: ${lunches.length}, 晚餐: ${dinners.length}, 小吃: ${snacks.length}`);
 
@@ -75,22 +100,62 @@ export async function POST(request: NextRequest) {
       return shuffled;
     };
 
+    // 智能选择菜品函数：确保同一道菜一周最多出现2次
+    const selectRecipe = (
+      availableRecipes: any[],
+      usedRecipes: Map<number, number>,
+      maxUsePerWeek: number = 2
+    ): any => {
+      // 过滤出可用的菜品（未达到使用上限）
+      const selectableRecipes = availableRecipes.filter(
+        recipe => (usedRecipes.get(recipe.id) || 0) < maxUsePerWeek
+      );
+
+      if (selectableRecipes.length === 0) {
+        // 如果所有菜品都达到上限，重置计数器并随机选择
+        console.warn('⚠️ 所有菜品都达到使用上限，重置计数器');
+        usedRecipes.clear();
+        return availableRecipes[Math.floor(Math.random() * availableRecipes.length)];
+      }
+
+      // 优先选择使用次数最少的菜品
+      const minUseCount = Math.min(
+        ...selectableRecipes.map(r => usedRecipes.get(r.id) || 0)
+      );
+      const leastUsedRecipes = selectableRecipes.filter(
+        r => (usedRecipes.get(r.id) || 0) === minUseCount
+      );
+
+      // 从使用次数最少的菜品中随机选择
+      const selected = leastUsedRecipes[Math.floor(Math.random() * leastUsedRecipes.length)];
+      
+      // 更新使用计数
+      usedRecipes.set(selected.id, (usedRecipes.get(selected.id) || 0) + 1);
+      
+      return selected;
+    };
+
     // 生成膳食计划
     const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const mealPlan = [];
 
-    // 随机打乱菜品，确保每周多样性
+    // 随机打乱菜品，增加随机性
     const shuffledBreakfasts = shuffle(breakfasts);
     const shuffledLunches = shuffle(lunches);
     const shuffledDinners = shuffle(dinners);
 
+    // 跟踪每道菜的使用次数
+    const breakfastUsage = new Map<number, number>();
+    const lunchUsage = new Map<number, number>();
+    const dinnerUsage = new Map<number, number>();
+
     for (let i = 0; i < days; i++) {
       const day = dayNames[i % 7];
       
-      // 循环选择，避免重复（如果菜品足够多）
-      const breakfast = shuffledBreakfasts[i % shuffledBreakfasts.length];
-      const lunch = shuffledLunches[i % shuffledLunches.length];
-      const dinner = shuffledDinners[i % shuffledDinners.length];
+      // 智能选择菜品，确保不超过2次
+      const breakfast = selectRecipe(shuffledBreakfasts, breakfastUsage, 2);
+      const lunch = selectRecipe(shuffledLunches, lunchUsage, 2);
+      const dinner = selectRecipe(shuffledDinners, dinnerUsage, 2);
 
       mealPlan.push({
         day,
@@ -105,6 +170,7 @@ export async function POST(request: NextRequest) {
             cook_time: breakfast.cook_time,
             calories: breakfast.calories,
             cuisine_type: breakfast.cuisine_type,
+            estimated_cost: breakfast.estimated_cost,
           } : null,
           lunch: lunch ? {
             id: lunch.id,
@@ -116,6 +182,7 @@ export async function POST(request: NextRequest) {
             cook_time: lunch.cook_time,
             calories: lunch.calories,
             cuisine_type: lunch.cuisine_type,
+            estimated_cost: lunch.estimated_cost,
           } : null,
           dinner: dinner ? {
             id: dinner.id,
@@ -127,10 +194,23 @@ export async function POST(request: NextRequest) {
             cook_time: dinner.cook_time,
             calories: dinner.calories,
             cuisine_type: dinner.cuisine_type,
+            estimated_cost: dinner.estimated_cost,
           } : null,
         },
       });
     }
+
+    // 输出使用统计
+    console.log('📊 菜品使用统计:');
+    console.log('早餐:', Array.from(breakfastUsage.entries()).map(([id, count]) => 
+      `${shuffledBreakfasts.find(r => r.id === id)?.name_zh}(${count}次)`
+    ).join(', '));
+    console.log('午餐:', Array.from(lunchUsage.entries()).map(([id, count]) => 
+      `${shuffledLunches.find(r => r.id === id)?.name_zh}(${count}次)`
+    ).join(', '));
+    console.log('晚餐:', Array.from(dinnerUsage.entries()).map(([id, count]) => 
+      `${shuffledDinners.find(r => r.id === id)?.name_zh}(${count}次)`
+    ).join(', '));
 
     console.log(`✅ 生成了 ${days} 天的膳食计划`);
 
@@ -251,13 +331,32 @@ export async function POST(request: NextRequest) {
           return a.name.localeCompare(b.name, 'zh-CN');
         });
 
-        console.log(`✅ 生成了 ${shoppingList.length} 项购物清单`);
+        // 计算购物清单总费用
+        const totalCost = shoppingList.reduce((sum, item) => sum + (item.estimated_price || 0), 0);
+        console.log(`✅ 生成了 ${shoppingList.length} 项购物清单，预估总费用: RM ${totalCost.toFixed(2)}`);
+        
+        // 如果有预算限制，检查是否超预算
+        if (weeklyBudget && weeklyBudget > 0) {
+          const budgetDiff = totalCost - weeklyBudget;
+          if (budgetDiff > 0) {
+            console.warn(`⚠️ 购物清单超出预算 RM ${budgetDiff.toFixed(2)}`);
+          } else {
+            console.log(`✅ 购物清单在预算范围内，节省 RM ${Math.abs(budgetDiff).toFixed(2)}`);
+          }
+        }
       }
     }
 
     return NextResponse.json({
       plan: mealPlan,
       shopping_list: shoppingList,
+      summary: {
+        total_items: shoppingList.length,
+        total_cost: shoppingList.reduce((sum, item) => sum + (item.estimated_price || 0), 0),
+        weekly_budget: weeklyBudget || null,
+        people_count: peopleCount,
+        days: days,
+      },
     });
 
   } catch (error: any) {
