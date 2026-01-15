@@ -61,58 +61,63 @@ export async function POST(request: NextRequest) {
 
     console.log(`✅ 查询到 ${allRecipes.length} 道菜品`);
 
-    // 根据预算过滤菜品（如果提供了预算）
-    let filteredRecipes = allRecipes;
-    if (weeklyBudget && weeklyBudget > 0) {
-      // 计算每餐平均预算 (7天 * 3餐 = 21餐)
-      const avgBudgetPerMeal = (weeklyBudget / (days * 3)) * peopleCount;
-      console.log(`💰 每餐平均预算: RM ${avgBudgetPerMeal.toFixed(2)}`);
-      
-      // 过滤出预算范围内的菜品（允许±30%的弹性）
-      const budgetMin = avgBudgetPerMeal * 0.5;  // 最低50%
-      const budgetMax = avgBudgetPerMeal * 1.5;  // 最高150%
-      
-      filteredRecipes = allRecipes.filter(r => {
-        const cost = r.estimated_cost || 0;
-        return cost >= budgetMin && cost <= budgetMax;
-      });
-      
-      console.log(`💰 预算过滤后剩余 ${filteredRecipes.length} 道菜品 (预算范围: RM${budgetMin.toFixed(2)} - RM${budgetMax.toFixed(2)})`);
-      
-      // 如果过滤后菜品太少，放宽限制
-      if (filteredRecipes.length < 15) {
-        console.warn('⚠️ 预算范围内菜品太少，扩大搜索范围');
-        filteredRecipes = allRecipes;
-      }
-    }
-
-    // 🔧 辅助函数：检查 meal_type 是否匹配（支持数组和字符串两种格式）
+    // 🔧 辅助函数：检查 meal_type 是否匹配
     const matchesMealType = (mealType: any, targetType: string): boolean => {
       if (!mealType) return false;
-      // 如果是数组，使用 includes
-      if (Array.isArray(mealType)) {
-        return mealType.includes(targetType);
-      }
-      // 如果是字符串，检查是否相等或包含
-      if (typeof mealType === 'string') {
-        return mealType === targetType || mealType.includes(targetType);
-      }
+      if (Array.isArray(mealType)) return mealType.includes(targetType);
+      if (typeof mealType === 'string') return mealType === targetType || mealType.includes(targetType);
       return false;
     };
 
-    // 按 meal_type 分组 (支持数组和字符串两种格式)
+    // 1. 先按餐型分组（不考虑预算）
+    const allBreakfasts = allRecipes.filter(r => matchesMealType(r.meal_type, 'breakfast'));
+    const allLunches = allRecipes.filter(r => matchesMealType(r.meal_type, 'lunch'));
+    const allDinners = allRecipes.filter(r => matchesMealType(r.meal_type, 'dinner'));
+
+    // 2. 预算过滤逻辑优化
+    let filteredRecipes = allRecipes;
+    let budgetDebugInfo = '未启用预算过滤';
+    
+    if (weeklyBudget && weeklyBudget > 0) {
+      const avgBudgetPerMeal = (weeklyBudget / (days * 3)) * peopleCount;
+      // 放宽限制：0.3倍 - 2.0倍，或者更宽松，避免早餐太便宜被过滤掉
+      const budgetMin = avgBudgetPerMeal * 0.3; 
+      const budgetMax = avgBudgetPerMeal * 2.0; 
+      
+      budgetDebugInfo = `预算范围 RM${budgetMin.toFixed(2)} - RM${budgetMax.toFixed(2)} (平均: RM${avgBudgetPerMeal.toFixed(2)})`;
+
+      filteredRecipes = allRecipes.filter(r => {
+        const cost = r.estimated_cost || 0;
+        // 关键修复：如果菜品价格为0（未录入），也保留，避免被误杀
+        if (cost === 0) return true;
+        return cost >= budgetMin && cost <= budgetMax;
+      });
+
+      // 🚨 紧急救援：如果过滤后早餐太少（小于7道），强制把所有便宜的早餐加回来
+      const filteredBreakfasts = filteredRecipes.filter(r => matchesMealType(r.meal_type, 'breakfast'));
+      if (filteredBreakfasts.length < 7) {
+        console.log('⚠️ 预算过滤后早餐太少，强制召回所有早餐');
+        budgetDebugInfo += ' | 触发早餐召回机制';
+        const missingBreakfasts = allBreakfasts.filter(b => !filteredRecipes.find(fr => fr.id === b.id));
+        filteredRecipes = [...filteredRecipes, ...missingBreakfasts];
+      }
+    }
+
+    // 3. 最终分组
     const breakfasts = filteredRecipes.filter(r => matchesMealType(r.meal_type, 'breakfast'));
     const lunches = filteredRecipes.filter(r => matchesMealType(r.meal_type, 'lunch'));
     const dinners = filteredRecipes.filter(r => matchesMealType(r.meal_type, 'dinner'));
     const snacks = filteredRecipes.filter(r => matchesMealType(r.meal_type, 'snack'));
 
-    console.log(`🍳 早餐: ${breakfasts.length}, 🍱 午餐: ${lunches.length}, 🍽️ 晚餐: ${dinners.length}, 🍿 小吃: ${snacks.length}`);
-    
-    // 🚨 检查早餐菜品数量，如果太少则警告
-    if (breakfasts.length < 4) {
-      console.warn(`⚠️ 警告：早餐菜品只有 ${breakfasts.length} 道，可能导致重复过多！`);
-      console.log('🔍 可用早餐菜品:', breakfasts.map(r => r.name_zh).join(', '));
-    }
+    // 收集调试日志
+    const debugLogs: string[] = [];
+    debugLogs.push(`🚀 API版本: v2.2 (强制多样性修复版)`);
+    debugLogs.push(`📊 统计: 总菜品 ${allRecipes.length}, 过滤后 ${filteredRecipes.length}`);
+    debugLogs.push(`🍳 早餐: 原始 ${allBreakfasts.length} -> 最终 ${breakfasts.length}`);
+    debugLogs.push(`💰 预算: ${budgetDebugInfo}`);
+    debugLogs.push(`📋 最终早餐列表: ${breakfasts.map(r => r.name_zh).join(', ')}`);
+
+    console.log(debugLogs.join('\n'));
 
     // 随机打乱函数
     const shuffle = <T,>(array: T[]): T[] => {
@@ -480,6 +485,13 @@ export async function POST(request: NextRequest) {
         people_count: peopleCount,
         days: days,
       },
+      // 🐛 暴露调试信息给前端
+      debug: {
+        version: 'v2.2',
+        logs: debugLogs,
+        breakfast_count: breakfasts.length,
+        breakfast_names: breakfasts.map(r => r.name_zh)
+      }
     });
 
   } catch (error: any) {
