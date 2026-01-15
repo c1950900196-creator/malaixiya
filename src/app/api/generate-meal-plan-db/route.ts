@@ -57,11 +57,11 @@ export async function POST(request: NextRequest) {
 
     console.log(`✅ 查询到 ${allRecipes.length} 道菜品`);
 
-    // 按 meal_type 分组
-    const breakfasts = allRecipes.filter(r => r.meal_type === 'breakfast');
-    const lunches = allRecipes.filter(r => r.meal_type === 'lunch');
-    const dinners = allRecipes.filter(r => r.meal_type === 'dinner');
-    const snacks = allRecipes.filter(r => r.meal_type === 'snack');
+    // 按 meal_type 分组 (meal_type 是数组类型，需要用 includes 检查)
+    const breakfasts = allRecipes.filter(r => r.meal_type && r.meal_type.includes('breakfast'));
+    const lunches = allRecipes.filter(r => r.meal_type && r.meal_type.includes('lunch'));
+    const dinners = allRecipes.filter(r => r.meal_type && r.meal_type.includes('dinner'));
+    const snacks = allRecipes.filter(r => r.meal_type && r.meal_type.includes('snack'));
 
     console.log(`早餐: ${breakfasts.length}, 午餐: ${lunches.length}, 晚餐: ${dinners.length}, 小吃: ${snacks.length}`);
 
