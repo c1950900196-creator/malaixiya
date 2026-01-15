@@ -9,7 +9,7 @@
 TRUNCATE TABLE ingredients CASCADE;
 
 -- 插入马来西亚常见食材（包含价格，单位：马币/kg 或 马币/份）
-INSERT INTO ingredients (name_zh, name_en, name_ms, category, unit, price_per_unit) VALUES
+INSERT INTO ingredients (name_zh, name_en, name_ms, category, unit, avg_price_per_unit) VALUES
 -- 肉类 (Meat)
 ('鸡肉', 'Chicken', 'Ayam', 'meat', 'kg', 12.00),
 ('鸡腿', 'Chicken Leg', 'Paha Ayam', 'meat', 'kg', 15.00),

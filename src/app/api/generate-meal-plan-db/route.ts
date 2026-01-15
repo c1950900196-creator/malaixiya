@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
             name_ms,
             category,
             unit,
-            avg_price_rm,
+            avg_price_per_unit,
             allergens
           )
         `)
