@@ -117,6 +117,10 @@ export function generateWeeklyMealPlan(
 ): { date: string; mealType: string; recipe: Recipe }[] {
   const plan: { date: string; mealType: string; recipe: Recipe }[] = [];
   
+  // 🆕 追踪每道菜在一周内的出现次数
+  const recipeUsageCount = new Map<string, number>();
+  const MAX_USAGE_PER_WEEK = 2; // 一周最多出现2次
+  
   // 计算每日目标热量
   const bmr = calculateBMR(
     profile.weight || 70,
@@ -155,21 +159,42 @@ export function generateWeeklyMealPlan(
         .sort((a, b) => b.score - a.score);
       
       // 从高分菜谱中随机选择，增加多样性
-      const topCandidates = scoredRecipes.slice(0, Math.min(10, scoredRecipes.length)); // 取前10名候选
-      const recentMeals = plan.slice(-6); // 检查最近6餐
+      const topCandidates = scoredRecipes.slice(0, Math.min(20, scoredRecipes.length)); // 🆕 增加到20个候选，提高多样性
       
-      // 过滤掉最近使用过的菜谱
-      const availableCandidates = topCandidates.filter(
-        (item) => !recentMeals.some((m) => m.recipe.id === item.recipe.id)
-      );
+      // 🆕 过滤逻辑：
+      // 1. 排除已经在本周达到最大使用次数的菜谱
+      // 2. 排除最近3餐中出现过的菜谱（避免连续重复）
+      const recentMeals = plan.slice(-3); // 检查最近3餐
       
-      // 如果所有候选都用过了，就用全部候选
-      const finalCandidates = availableCandidates.length > 0 ? availableCandidates : topCandidates;
+      const availableCandidates = topCandidates.filter((item) => {
+        const usageCount = recipeUsageCount.get(item.recipe.id) || 0;
+        const recentlyUsed = recentMeals.some((m) => m.recipe.id === item.recipe.id);
+        
+        // 必须满足：1) 未达到周上限 2) 最近3餐未使用
+        return usageCount < MAX_USAGE_PER_WEEK && !recentlyUsed;
+      });
       
-      // 随机选择一个
+      // 如果没有符合条件的候选，尝试放宽限制
+      let finalCandidates = availableCandidates;
+      
+      if (finalCandidates.length === 0) {
+        // 备选方案1：只检查周上限，忽略最近3餐限制
+        finalCandidates = topCandidates.filter((item) => {
+          const usageCount = recipeUsageCount.get(item.recipe.id) || 0;
+          return usageCount < MAX_USAGE_PER_WEEK;
+        });
+      }
+      
+      if (finalCandidates.length === 0) {
+        // 备选方案2：使用所有候选（极端情况，菜品数量太少）
+        finalCandidates = topCandidates;
+        console.warn(`⚠️ 警告：${mealType} 菜品不足，无法满足多样性要求`);
+      }
+      
+      // 随机选择一个（增加随机性）
       let selectedRecipe: Recipe | undefined;
       if (finalCandidates.length > 0) {
-        const randomIndex = Math.floor(Math.random() * finalCandidates.length);
+        const randomIndex = Math.floor(Math.random() * Math.min(5, finalCandidates.length)); // 🆕 从前5个中随机选
         selectedRecipe = finalCandidates[randomIndex]?.recipe;
       }
       
@@ -179,6 +204,10 @@ export function generateWeeklyMealPlan(
           mealType,
           recipe: selectedRecipe,
         });
+        
+        // 🆕 更新使用次数
+        const currentCount = recipeUsageCount.get(selectedRecipe.id) || 0;
+        recipeUsageCount.set(selectedRecipe.id, currentCount + 1);
       }
     }
   }
