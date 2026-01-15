@@ -9,10 +9,10 @@ import { createBrowserClient } from '@/lib/supabase';
 import { useUserStore } from '@/store/userStore';
 import { useMealPlanStore } from '@/store/mealPlanStore';
 
-// 后台异步生成购物清单（已废弃 - 现在由膳食计划 API 一起生成）
+// 保存购物清单（从数据库返回的结果）
 async function saveShoppingListFromAI(userId: string, mealPlanId: string, shoppingListItems: any[], supabase: any) {
   try {
-    console.log('🛒 Saving shopping list from AI response...');
+    console.log('🛒 Saving shopping list...');
 
     // 创建购物清单记录
     const { data: shoppingList, error: listError } = await supabase
@@ -35,19 +35,21 @@ async function saveShoppingListFromAI(userId: string, mealPlanId: string, shoppi
     // 保存购物清单项目
     if (shoppingListItems && shoppingListItems.length > 0) {
       console.log('📦 Processing', shoppingListItems.length, 'shopping items');
-      console.log('📦 First item:', shoppingListItems[0]);
       
       const items = shoppingListItems.map((item: any) => {
-        const notesText = `${item.name || '未知'} | ${item.name_en || ''} | ${item.name_ms || ''}`;
-        console.log('📝 Item notes:', notesText);
+        // 适配数据库格式
+        const name = item.name || item.name_zh || '未知';
+        const nameEn = item.name_en || '';
+        const nameMs = item.name_ms || '';
+        const notesText = `${name} | ${nameEn} | ${nameMs}`;
         
         return {
           shopping_list_id: shoppingList.id,
-          ingredient_id: null,
+          ingredient_id: item.ingredient_id || null,
           quantity: item.quantity || 0,
           unit: item.unit || 'g',
           category: item.category || '其他',
-          estimated_price: item.price || 0,
+          estimated_price: item.estimated_price || item.price || 0,
           is_purchased: false,
           notes: notesText,
         };
@@ -327,7 +329,7 @@ export default function Home() {
         throw new Error('食谱数据库为空，请先执行 seed-recipes.sql');
       }
       
-      // 使用 AI 生成膳食计划
+      // 使用数据库生成膳食计划（不再使用豆包AI）
       const userProfile = {
         id: user.id,
         full_name: data.full_name,
@@ -344,55 +346,33 @@ export default function Home() {
       
       const restrictionsArray = data.restrictions || [];
       
-      // 分 7 次调用 AI，每次生成 1 天的膳食计划
-      const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-      const dayNamesZh = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-      const allDayPlans: any[] = [];
+      // 一次性从数据库生成完整的 7 天膳食计划
+      setProgress(40);
+      setLoadingStep('正在从数据库生成膳食计划...');
       
-      for (let i = 0; i < 7; i++) {
-        const progressBase = 30 + Math.floor((i / 7) * 40); // 30% - 70%
-        setProgress(progressBase);
-        setLoadingStep(`正在生成${dayNamesZh[i]}的膳食计划... (${i + 1}/7)`);
-        
-        console.log(`📤 Generating meal plan for ${dayNames[i]}...`);
-        
-        const aiResponse = await fetch('/api/generate-meal-plan', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userProfile,
-            restrictions: restrictionsArray,
-            day: dayNames[i],
-            dayIndex: i,
-          }),
-        });
-        
-        if (aiResponse.ok) {
-          const dayResult = await aiResponse.json();
-          console.log(`✅ ${dayNames[i]} meal plan generated:`, dayResult);
-          allDayPlans.push({
-            day: dayNames[i],
-            meals: dayResult.meals || dayResult,
-          });
-        } else {
-          const errorData = await aiResponse.json().catch(() => ({}));
-          console.error(`❌ Failed to generate ${dayNames[i]}:`, errorData);
-          // 如果某一天失败，使用不同的默认餐食
-          const fallbackMeals = [
-            { breakfast: { name_zh: '椰浆饭', name_en: 'Nasi Lemak' }, lunch: { name_zh: '海南鸡饭', name_en: 'Hainanese Chicken Rice' }, dinner: { name_zh: '肉骨茶', name_en: 'Bak Kut Teh' } },
-            { breakfast: { name_zh: '咖椰吐司', name_en: 'Kaya Toast' }, lunch: { name_zh: '叻沙', name_en: 'Laksa' }, dinner: { name_zh: '沙爹', name_en: 'Satay' } },
-            { breakfast: { name_zh: '印度煎饼', name_en: 'Roti Canai' }, lunch: { name_zh: '炒粿条', name_en: 'Char Kway Teow' }, dinner: { name_zh: '咖喱鸡', name_en: 'Curry Chicken' } },
-            { breakfast: { name_zh: '云吞面', name_en: 'Wonton Noodles' }, lunch: { name_zh: '福建面', name_en: 'Hokkien Mee' }, dinner: { name_zh: '仁当牛肉', name_en: 'Beef Rendang' } },
-            { breakfast: { name_zh: '炒米粉', name_en: 'Fried Bee Hoon' }, lunch: { name_zh: '板面', name_en: 'Pan Mee' }, dinner: { name_zh: '亚参鱼', name_en: 'Asam Fish' } },
-            { breakfast: { name_zh: '粥', name_en: 'Congee' }, lunch: { name_zh: '咖喱面', name_en: 'Curry Mee' }, dinner: { name_zh: '参巴虾', name_en: 'Sambal Prawns' } },
-            { breakfast: { name_zh: '娘惹糕', name_en: 'Nyonya Kuih' }, lunch: { name_zh: '酿豆腐', name_en: 'Yong Tau Foo' }, dinner: { name_zh: '烧鸡', name_en: 'Roast Chicken' } },
-          ];
-          allDayPlans.push({
-            day: dayNames[i],
-            meals: fallbackMeals[i % fallbackMeals.length],
-          });
-        }
+      console.log('📤 从数据库生成膳食计划...');
+      
+      const dbResponse = await fetch('/api/generate-meal-plan-db', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userProfile,
+          restrictions: restrictionsArray,
+          days: 7,
+          peopleCount: data.people_count || 2,
+        }),
+      });
+      
+      if (!dbResponse.ok) {
+        const errorData = await dbResponse.json().catch(() => ({}));
+        console.error('❌ 数据库生成膳食计划失败:', errorData);
+        throw new Error(errorData.error || '膳食计划生成失败');
       }
+      
+      const dbResult = await dbResponse.json();
+      console.log('✅ 数据库生成膳食计划成功:', dbResult);
+      
+      const allDayPlans = dbResult.plan || [];
       
       // 构建完整的 aiResult
       const aiResult = { plan: allDayPlans };
@@ -574,69 +554,22 @@ export default function Home() {
       setProgress(75);
       setLoadingStep('正在生成购物清单...');
       
-      // 收集所有菜名
-      const allMealNames = mealPlan.map(m => m.recipe?.name_zh || m.recipe?.name_en || '').filter(Boolean);
-      console.log('📋 所有菜名：', allMealNames);
+      // 使用数据库返回的购物清单（不再调用豆包AI）
+      let mergedItems = dbResult.shopping_list || [];
+      console.log('✅ 数据库返回购物清单：', mergedItems.length, '项');
       
-      // 将 21 个菜名分成 7 组（每组 3 个，对应每天的3餐）
-      const groups: string[][] = [];
-      for (let i = 0; i < allMealNames.length; i += 3) {
-        groups.push(allMealNames.slice(i, i + 3));
-      }
-      
-      const allShoppingItems: any[] = [];
-      
-      // 分 3 次调用 AI，每次获取一组菜的食材清单
-      for (let i = 0; i < groups.length; i++) {
-        setProgress(75 + Math.floor((i / groups.length) * 20));
-        setLoadingStep(`正在生成食材清单... (${i + 1}/${groups.length})`);
-        
-        const groupMeals = groups[i];
-        const shoppingPrompt = `列出制作以下马来西亚菜品需要的食材：${groupMeals.join('、')}
-
-返回JSON：{"items":[{"name":"食材名","category":"分类","quantity":数量,"unit":"单位","price":单价}]}
-
-要求：列出所有主要食材，每种食材只出现一次。`;
-
-        try {
-          const shoppingResponse = await fetch('/api/generate-shopping-list', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: shoppingPrompt }),
-          });
-          
-          if (shoppingResponse.ok) {
-            const shoppingResult = await shoppingResponse.json();
-            if (shoppingResult.items && shoppingResult.items.length > 0) {
-              console.log(`✅ 第 ${i + 1} 组购物清单：`, shoppingResult.items.length, '项');
-              allShoppingItems.push(...shoppingResult.items);
-            }
-          } else {
-            console.warn(`⚠️ 第 ${i + 1} 组购物清单生成失败`);
-          }
-        } catch (shoppingError) {
-          console.warn(`⚠️ 第 ${i + 1} 组购物清单生成出错:`, shoppingError);
-        }
-      }
-      
-      // 用 JavaScript 合并、去重、汇总数量
-      let mergedItems = mergeShoppingItems(allShoppingItems);
-      console.log('✅ 合并后购物清单：', mergedItems.length, '项');
-      
-      // 如果 AI 生成失败或数量太少，使用预设模板
+      // 如果数据库没有返回购物清单（例如食材关联未配置），使用预设模板
       if (mergedItems.length < 5) {
-        console.log('⚠️ AI 生成的购物清单太少，使用预设模板');
+        console.log('⚠️ 数据库购物清单太少，使用预设模板');
         const defaultItems = getDefaultShoppingList();
-        // 合并 AI 生成的和预设的
         mergedItems = mergeShoppingItems([...mergedItems, ...defaultItems]);
         console.log('✅ 使用预设模板后购物清单：', mergedItems.length, '项');
       }
       
-      // 保存购物清单（即使为空也保存预设的）
+      // 保存购物清单
       if (mergedItems.length > 0) {
         await saveShoppingListFromAI(user.id, planData.id, mergedItems, supabase);
       } else {
-        // 如果完全没有数据，使用预设模板
         console.log('⚠️ 没有购物清单数据，使用完整预设模板');
         const defaultItems = getDefaultShoppingList();
         await saveShoppingListFromAI(user.id, planData.id, defaultItems, supabase);
