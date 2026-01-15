@@ -1917,6 +1917,604 @@ WHERE r.name_zh = '酸辣鱼头'
   AND i.name_zh IN ('鱼头', '罗望子', '辣椒', '蔬菜')
 ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
 
--- ========== 完成！所有90道菜的食材关联已配置 ==========
--- 总计：69道(原有) + 21道(补充) = 90道菜品
+-- ========== 新增30道菜的食材关联 (91-120) ==========
+
+-- 热雨饭
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '白米' THEN 0.5
+    WHEN '鸡肉' THEN 0.4
+    WHEN '咖喱' THEN 0.15
+    WHEN '腌菜' THEN 0.1
+  END,
+  CASE i.name_zh
+    WHEN '白米' THEN 'kg'
+    WHEN '鸡肉' THEN 'kg'
+    WHEN '咖喱' THEN 'jar'
+    WHEN '腌菜' THEN 'jar'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '热雨饭'
+  AND i.name_zh IN ('白米', '鸡肉', '咖喱', '腌菜')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 酸辣魔鬼鱼
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '魔鬼鱼' THEN 0.6
+    WHEN '罗望子' THEN 0.1
+    WHEN '辣椒' THEN 0.12
+    WHEN '番茄' THEN 0.15
+  END,
+  CASE i.name_zh
+    WHEN '魔鬼鱼' THEN 'kg'
+    WHEN '罗望子' THEN 'pack'
+    WHEN '辣椒' THEN 'kg'
+    WHEN '番茄' THEN 'kg'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '酸辣魔鬼鱼'
+  AND i.name_zh IN ('魔鬼鱼', '罗望子', '辣椒', '番茄')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 吉兰丹炒饭
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '白米' THEN 0.4
+    WHEN '鸡肉' THEN 0.3
+    WHEN '蝶豆花' THEN 0.02
+    WHEN '香草' THEN 0.05
+  END,
+  CASE i.name_zh
+    WHEN '白米' THEN 'kg'
+    WHEN '鸡肉' THEN 'kg'
+    WHEN '蝶豆花' THEN 'pack'
+    WHEN '香草' THEN 'bunch'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '吉兰丹炒饭'
+  AND i.name_zh IN ('白米', '鸡肉', '蝶豆花', '香草')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 河虾椰奶咖喱
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '虾' THEN 0.5
+    WHEN '椰奶' THEN 0.4
+    WHEN '黄姜' THEN 0.03
+    WHEN '辣椒' THEN 0.08
+  END,
+  CASE i.name_zh
+    WHEN '虾' THEN 'kg'
+    WHEN '椰奶' THEN 'can'
+    WHEN '黄姜' THEN 'kg'
+    WHEN '辣椒' THEN 'kg'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '河虾椰奶咖喱'
+  AND i.name_zh IN ('虾', '椰奶', '黄姜', '辣椒')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 网饼
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '面粉' THEN 0.3
+    WHEN '椰奶' THEN 0.2
+    WHEN '鸡蛋' THEN 0.08
+    WHEN '黄姜' THEN 0.02
+  END,
+  CASE i.name_zh
+    WHEN '面粉' THEN 'kg'
+    WHEN '椰奶' THEN 'can'
+    WHEN '鸡蛋' THEN 'tray'
+    WHEN '黄姜' THEN 'kg'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '网饼'
+  AND i.name_zh IN ('面粉', '椰奶', '鸡蛋', '黄姜')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 葡式烤鱼
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '鱼' THEN 0.6
+    WHEN '辣椒酱' THEN 0.15
+    WHEN '大蒜' THEN 0.05
+    WHEN '青柠' THEN 0.05
+  END,
+  CASE i.name_zh
+    WHEN '鱼' THEN 'kg'
+    WHEN '辣椒酱' THEN 'bottle'
+    WHEN '大蒜' THEN 'kg'
+    WHEN '青柠' THEN 'kg'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '葡式烤鱼'
+  AND i.name_zh IN ('鱼', '辣椒酱', '大蒜', '青柠')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 油饭
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '白米' THEN 0.5
+    WHEN '黄油' THEN 0.1
+    WHEN '洋葱' THEN 0.15
+    WHEN '香料' THEN 0.05
+  END,
+  CASE i.name_zh
+    WHEN '白米' THEN 'kg'
+    WHEN '黄油' THEN 'block'
+    WHEN '洋葱' THEN 'kg'
+    WHEN '香料' THEN 'pack'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '油饭'
+  AND i.name_zh IN ('白米', '黄油', '洋葱', '香料')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 甲必丹鸡
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '鸡肉' THEN 0.6
+    WHEN '椰奶' THEN 0.3
+    WHEN '辣椒' THEN 0.1
+    WHEN '香茅' THEN 0.03
+    WHEN '南姜' THEN 0.03
+  END,
+  CASE i.name_zh
+    WHEN '鸡肉' THEN 'kg'
+    WHEN '椰奶' THEN 'can'
+    WHEN '辣椒' THEN 'kg'
+    WHEN '香茅' THEN 'bunch'
+    WHEN '南姜' THEN 'kg'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '甲必丹鸡'
+  AND i.name_zh IN ('鸡肉', '椰奶', '辣椒', '香茅', '南姜')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 木薯饼
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '木薯粉' THEN 0.4
+    WHEN '椰奶' THEN 0.2
+    WHEN '糖' THEN 0.15
+    WHEN '鸡蛋' THEN 0.05
+  END,
+  CASE i.name_zh
+    WHEN '木薯粉' THEN 'pack'
+    WHEN '椰奶' THEN 'can'
+    WHEN '糖' THEN 'kg'
+    WHEN '鸡蛋' THEN 'tray'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '木薯饼'
+  AND i.name_zh IN ('木薯粉', '椰奶', '糖', '鸡蛋')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 酿鲭鱼
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '鲭鱼' THEN 0.5
+    WHEN '参巴酱' THEN 0.15
+    WHEN '青柠' THEN 0.05
+    WHEN '香茅' THEN 0.03
+  END,
+  CASE i.name_zh
+    WHEN '鲭鱼' THEN 'kg'
+    WHEN '参巴酱' THEN 'jar'
+    WHEN '青柠' THEN 'kg'
+    WHEN '香茅' THEN 'bunch'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '酿鲭鱼'
+  AND i.name_zh IN ('鲭鱼', '参巴酱', '青柠', '香茅')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 辣椒炒饭
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '白米' THEN 0.4
+    WHEN '鸡肉' THEN 0.2
+    WHEN '辣椒' THEN 0.1
+    WHEN '鸡蛋' THEN 0.05
+  END,
+  CASE i.name_zh
+    WHEN '白米' THEN 'kg'
+    WHEN '鸡肉' THEN 'kg'
+    WHEN '辣椒' THEN 'kg'
+    WHEN '鸡蛋' THEN 'tray'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '辣椒炒饭'
+  AND i.name_zh IN ('白米', '鸡肉', '辣椒', '鸡蛋')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 羊肉汤
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '羊肉' THEN 0.6
+    WHEN '洋葱' THEN 0.2
+    WHEN '番茄' THEN 0.2
+    WHEN '香料' THEN 0.05
+  END,
+  CASE i.name_zh
+    WHEN '羊肉' THEN 'kg'
+    WHEN '洋葱' THEN 'kg'
+    WHEN '番茄' THEN 'kg'
+    WHEN '香料' THEN 'pack'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '羊肉汤'
+  AND i.name_zh IN ('羊肉', '洋葱', '番茄', '香料')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 榴莲膏鱼
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '鱼' THEN 0.5
+    WHEN '榴莲膏' THEN 0.2
+    WHEN '辣椒' THEN 0.08
+    WHEN '椰奶' THEN 0.2
+  END,
+  CASE i.name_zh
+    WHEN '鱼' THEN 'kg'
+    WHEN '榴莲膏' THEN 'jar'
+    WHEN '辣椒' THEN 'kg'
+    WHEN '椰奶' THEN 'can'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '榴莲膏鱼'
+  AND i.name_zh IN ('鱼', '榴莲膏', '辣椒', '椰奶')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 爪哇面
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '面条' THEN 0.4
+    WHEN '土豆' THEN 0.25
+    WHEN '豆芽' THEN 0.15
+    WHEN '番茄酱' THEN 0.1
+  END,
+  CASE i.name_zh
+    WHEN '面条' THEN 'kg'
+    WHEN '土豆' THEN 'kg'
+    WHEN '豆芽' THEN 'kg'
+    WHEN '番茄酱' THEN 'bottle'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '爪哇面'
+  AND i.name_zh IN ('面条', '土豆', '豆芽', '番茄酱')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 黄糯米
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '糯米' THEN 0.5
+    WHEN '椰奶' THEN 0.3
+    WHEN '黄姜' THEN 0.03
+    WHEN '盐' THEN 0.02
+  END,
+  CASE i.name_zh
+    WHEN '糯米' THEN 'kg'
+    WHEN '椰奶' THEN 'can'
+    WHEN '黄姜' THEN 'kg'
+    WHEN '盐' THEN 'pack'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '黄糯米'
+  AND i.name_zh IN ('糯米', '椰奶', '黄姜', '盐')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 咖喱鸡
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '鸡肉' THEN 0.6
+    WHEN '咖喱' THEN 0.2
+    WHEN '椰奶' THEN 0.3
+    WHEN '土豆' THEN 0.2
+  END,
+  CASE i.name_zh
+    WHEN '鸡肉' THEN 'kg'
+    WHEN '咖喱' THEN 'jar'
+    WHEN '椰奶' THEN 'can'
+    WHEN '土豆' THEN 'kg'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '咖喱鸡'
+  AND i.name_zh IN ('鸡肉', '咖喱', '椰奶', '土豆')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 烤竹荚鱼
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '鱼' THEN 0.5
+    WHEN '参巴酱' THEN 0.12
+    WHEN '青柠' THEN 0.05
+  END,
+  CASE i.name_zh
+    WHEN '鱼' THEN 'kg'
+    WHEN '参巴酱' THEN 'jar'
+    WHEN '青柠' THEN 'kg'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '烤竹荚鱼'
+  AND i.name_zh IN ('鱼', '参巴酱', '青柠')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 泰式炒饭
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '白米' THEN 0.4
+    WHEN '虾' THEN 0.2
+    WHEN '罗勒叶' THEN 0.03
+    WHEN '鱼露' THEN 0.03
+  END,
+  CASE i.name_zh
+    WHEN '白米' THEN 'kg'
+    WHEN '虾' THEN 'kg'
+    WHEN '罗勒叶' THEN 'bunch'
+    WHEN '鱼露' THEN 'bottle'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '泰式炒饭'
+  AND i.name_zh IN ('白米', '虾', '罗勒叶', '鱼露')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 豉油虾
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '虾' THEN 0.5
+    WHEN '酱油' THEN 0.1
+    WHEN '辣椒' THEN 0.05
+    WHEN '糖' THEN 0.03
+  END,
+  CASE i.name_zh
+    WHEN '虾' THEN 'kg'
+    WHEN '酱油' THEN 'bottle'
+    WHEN '辣椒' THEN 'kg'
+    WHEN '糖' THEN 'kg'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '豉油虾'
+  AND i.name_zh IN ('虾', '酱油', '辣椒', '糖')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 植物牛油煎饼
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '面粉' THEN 0.3
+    WHEN '黄油' THEN 0.1
+    WHEN '糖' THEN 0.05
+  END,
+  CASE i.name_zh
+    WHEN '面粉' THEN 'kg'
+    WHEN '黄油' THEN 'block'
+    WHEN '糖' THEN 'kg'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '植物牛油煎饼'
+  AND i.name_zh IN ('面粉', '黄油', '糖')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 黄姜炸鸡
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '鸡肉' THEN 0.6
+    WHEN '黄姜' THEN 0.03
+    WHEN '面粉' THEN 0.15
+    WHEN '盐' THEN 0.02
+  END,
+  CASE i.name_zh
+    WHEN '鸡肉' THEN 'kg'
+    WHEN '黄姜' THEN 'kg'
+    WHEN '面粉' THEN 'kg'
+    WHEN '盐' THEN 'pack'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '黄姜炸鸡'
+  AND i.name_zh IN ('鸡肉', '黄姜', '面粉', '盐')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 参巴烤魔鬼鱼
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '魔鬼鱼' THEN 0.5
+    WHEN '参巴酱' THEN 0.15
+    WHEN '香蕉叶' THEN 0.05
+  END,
+  CASE i.name_zh
+    WHEN '魔鬼鱼' THEN 'kg'
+    WHEN '参巴酱' THEN 'jar'
+    WHEN '香蕉叶' THEN 'pack'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '参巴烤魔鬼鱼'
+  AND i.name_zh IN ('魔鬼鱼', '参巴酱', '香蕉叶')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 虾膏炒饭
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '白米' THEN 0.4
+    WHEN '虾膏' THEN 0.05
+    WHEN '江鱼仔' THEN 0.08
+    WHEN '鸡蛋' THEN 0.05
+  END,
+  CASE i.name_zh
+    WHEN '白米' THEN 'kg'
+    WHEN '虾膏' THEN 'jar'
+    WHEN '江鱼仔' THEN 'pack'
+    WHEN '鸡蛋' THEN 'tray'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '虾膏炒饭'
+  AND i.name_zh IN ('白米', '虾膏', '江鱼仔', '鸡蛋')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 鱼咖喱
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '鱼' THEN 0.5
+    WHEN '咖喱' THEN 0.15
+    WHEN '椰奶' THEN 0.2
+    WHEN '番茄' THEN 0.15
+  END,
+  CASE i.name_zh
+    WHEN '鱼' THEN 'kg'
+    WHEN '咖喱' THEN 'jar'
+    WHEN '椰奶' THEN 'can'
+    WHEN '番茄' THEN 'kg'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '鱼咖喱'
+  AND i.name_zh IN ('鱼', '咖喱', '椰奶', '番茄')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 绿煎饼卷
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '面粉' THEN 0.3
+    WHEN '椰奶' THEN 0.2
+    WHEN '班兰叶' THEN 0.04
+    WHEN '椰丝' THEN 0.2
+    WHEN '糖' THEN 0.15
+  END,
+  CASE i.name_zh
+    WHEN '面粉' THEN 'kg'
+    WHEN '椰奶' THEN 'can'
+    WHEN '班兰叶' THEN 'bunch'
+    WHEN '椰丝' THEN 'pack'
+    WHEN '糖' THEN 'kg'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '绿煎饼卷'
+  AND i.name_zh IN ('面粉', '椰奶', '班兰叶', '椰丝', '糖')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 鲶鱼椰奶咖喱
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '鱼' THEN 0.5
+    WHEN '椰奶' THEN 0.3
+    WHEN '黄姜' THEN 0.03
+    WHEN '辣椒' THEN 0.08
+  END,
+  CASE i.name_zh
+    WHEN '鱼' THEN 'kg'
+    WHEN '椰奶' THEN 'can'
+    WHEN '黄姜' THEN 'kg'
+    WHEN '辣椒' THEN 'kg'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '鲶鱼椰奶咖喱'
+  AND i.name_zh IN ('鱼', '椰奶', '黄姜', '辣椒')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 印度炒面
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '面条' THEN 0.4
+    WHEN '豆腐' THEN 0.2
+    WHEN '土豆' THEN 0.15
+    WHEN '辣椒酱' THEN 0.08
+  END,
+  CASE i.name_zh
+    WHEN '面条' THEN 'kg'
+    WHEN '豆腐' THEN 'block'
+    WHEN '土豆' THEN 'kg'
+    WHEN '辣椒酱' THEN 'bottle'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '印度炒面'
+  AND i.name_zh IN ('面条', '豆腐', '土豆', '辣椒酱')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 炸鱿鱼
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '鱿鱼' THEN 0.5
+    WHEN '面粉' THEN 0.2
+    WHEN '盐' THEN 0.02
+  END,
+  CASE i.name_zh
+    WHEN '鱿鱼' THEN 'kg'
+    WHEN '面粉' THEN 'kg'
+    WHEN '盐' THEN 'pack'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '炸鱿鱼'
+  AND i.name_zh IN ('鱿鱼', '面粉', '盐')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 咸鱼炒饭
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '白米' THEN 0.4
+    WHEN '咸鱼' THEN 0.1
+    WHEN '鸡肉' THEN 0.2
+    WHEN '鸡蛋' THEN 0.05
+  END,
+  CASE i.name_zh
+    WHEN '白米' THEN 'kg'
+    WHEN '咸鱼' THEN 'pack'
+    WHEN '鸡肉' THEN 'kg'
+    WHEN '鸡蛋' THEN 'tray'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '咸鱼炒饭'
+  AND i.name_zh IN ('白米', '咸鱼', '鸡肉', '鸡蛋')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 开斋粥
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '白米' THEN 0.3
+    WHEN '牛肉' THEN 0.3
+    WHEN '蔬菜' THEN 0.25
+    WHEN '香料' THEN 0.05
+  END,
+  CASE i.name_zh
+    WHEN '白米' THEN 'kg'
+    WHEN '牛肉' THEN 'kg'
+    WHEN '蔬菜' THEN 'kg'
+    WHEN '香料' THEN 'pack'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '开斋粥'
+  AND i.name_zh IN ('白米', '牛肉', '蔬菜', '香料')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- ========== 完成！所有120道菜的食材关联已配置 ==========
+-- 总计：90道(原有) + 30道(新增) = 120道菜品
 

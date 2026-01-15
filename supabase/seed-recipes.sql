@@ -1610,3 +1610,529 @@ VALUES (
   true,
   4.50
 );
+
+-- ========== 新增30道菜品 (91-120) ==========
+
+-- 91. Nasi Hujan Panas (热雨饭)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Hot Rain Rice',
+  'Nasi Hujan Panas',
+  '热雨饭',
+  '吉兰丹特色米饭配咖喱鸡和腌菜',
+  'malay',
+  ARRAY['lunch', 'dinner'],
+  20,
+  40,
+  4,
+  'medium',
+  true,
+  9.00
+);
+
+-- 92. Ikan Pari Asam Pedas (酸辣魔鬼鱼)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, contains_seafood, estimated_cost)
+VALUES (
+  'Spicy Sour Stingray',
+  'Ikan Pari Asam Pedas',
+  '酸辣魔鬼鱼',
+  '酸辣魔鬼鱼汤，麻六甲特色',
+  'malay',
+  ARRAY['lunch', 'dinner'],
+  15,
+  30,
+  3,
+  'medium',
+  true,
+  true,
+  13.00
+);
+
+-- 93. Nasi Goreng Kerabu (吉兰丹炒饭)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Kerabu Fried Rice',
+  'Nasi Goreng Kerabu',
+  '吉兰丹炒饭',
+  '蓝色香草炒饭配炸鸡',
+  'malay',
+  ARRAY['lunch', 'dinner'],
+  20,
+  15,
+  3,
+  'medium',
+  true,
+  8.00
+);
+
+-- 94. Udang Galah Masak Lemak (河虾椰奶咖喱)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, contains_seafood, estimated_cost)
+VALUES (
+  'Prawn Coconut Curry',
+  'Udang Galah Masak Lemak',
+  '河虾椰奶咖喱',
+  '大河虾配黄姜椰奶汁',
+  'malay',
+  ARRAY['lunch', 'dinner'],
+  15,
+  25,
+  4,
+  'medium',
+  true,
+  true,
+  15.00
+);
+
+-- 95. Roti Jala (网饼)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Net Bread',
+  'Roti Jala',
+  '网饼',
+  '马来传统网状煎饼，配咖喱',
+  'malay',
+  ARRAY['breakfast', 'snack'],
+  30,
+  20,
+  6,
+  'medium',
+  true,
+  5.00
+);
+
+-- 96. Ikan Bakar Portugis (葡式烤鱼)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, contains_seafood, estimated_cost)
+VALUES (
+  'Portuguese Grilled Fish',
+  'Ikan Bakar Portugis',
+  '葡式烤鱼',
+  '麻六甲葡萄牙风味烤鱼',
+  'portuguese',
+  ARRAY['lunch', 'dinner'],
+  20,
+  25,
+  3,
+  'medium',
+  false,
+  true,
+  12.00
+);
+
+-- 97. Nasi Minyak (油饭)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Ghee Rice',
+  'Nasi Minyak',
+  '油饭',
+  '印度回教酥油香料饭',
+  'indian',
+  ARRAY['lunch', 'dinner'],
+  15,
+  30,
+  6,
+  'medium',
+  true,
+  7.50
+);
+
+-- 98. Ayam Kapitan (甲必丹鸡)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Captain Chicken Curry',
+  'Ayam Kapitan',
+  '甲必丹鸡',
+  '马六甲娘惹辣椰奶鸡',
+  'nyonya',
+  ARRAY['lunch', 'dinner'],
+  25,
+  40,
+  4,
+  'medium',
+  true,
+  10.00
+);
+
+-- 99. Kuih Bangkit (木薯饼)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, is_vegetarian, estimated_cost)
+VALUES (
+  'Tapioca Cookies',
+  'Kuih Bangkit',
+  '木薯饼',
+  '新年传统椰香小饼干',
+  'chinese',
+  ARRAY['snack', 'dessert'],
+  40,
+  30,
+  30,
+  'medium',
+  true,
+  true,
+  6.00
+);
+
+-- 100. Ikan Kembung Sumbat (酿鲭鱼)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, contains_seafood, estimated_cost)
+VALUES (
+  'Stuffed Mackerel',
+  'Ikan Kembung Sumbat',
+  '酿鲭鱼',
+  '参巴酿鲭鱼，登嘉楼特色',
+  'malay',
+  ARRAY['lunch', 'dinner'],
+  30,
+  20,
+  4,
+  'hard',
+  true,
+  true,
+  9.00
+);
+
+-- 101. Nasi Goreng Paprik (辣椒炒饭)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Paprika Fried Rice',
+  'Nasi Goreng Paprik',
+  '辣椒炒饭',
+  '马来辣椒炒饭配鸡蛋',
+  'malay',
+  ARRAY['lunch', 'dinner'],
+  15,
+  12,
+  2,
+  'easy',
+  true,
+  6.50
+);
+
+-- 102. Sup Kambing (羊肉汤)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Mutton Soup',
+  'Sup Kambing',
+  '羊肉汤',
+  '印度回教羊肉香料汤',
+  'indian',
+  ARRAY['lunch', 'dinner'],
+  15,
+  60,
+  6,
+  'medium',
+  true,
+  11.00
+);
+
+-- 103. Ikan Patin Masak Tempoyak (榴莲膏鱼)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, contains_seafood, estimated_cost)
+VALUES (
+  'Patin Fish with Durian Paste',
+  'Ikan Patin Masak Tempoyak',
+  '榴莲膏鱼',
+  '彭亨河鱼配发酵榴莲',
+  'malay',
+  ARRAY['lunch', 'dinner'],
+  20,
+  35,
+  4,
+  'medium',
+  true,
+  true,
+  12.00
+);
+
+-- 104. Mee Jawa (爪哇面)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Javanese Noodles',
+  'Mee Jawa',
+  '爪哇面',
+  '柔佛浓汁黄面配薯仔',
+  'indonesian',
+  ARRAY['lunch', 'dinner'],
+  20,
+  25,
+  3,
+  'medium',
+  true,
+  6.00
+);
+
+-- 105. Pulut Kuning (黄糯米)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, is_vegetarian, estimated_cost)
+VALUES (
+  'Yellow Glutinous Rice',
+  'Pulut Kuning',
+  '黄糯米',
+  '黄姜椰奶糯米，马来庆典必备',
+  'malay',
+  ARRAY['breakfast', 'lunch'],
+  30,
+  40,
+  8,
+  'medium',
+  true,
+  true,
+  6.50
+);
+
+-- 106. Ayam Kurma (咖喱鸡)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Chicken Korma',
+  'Ayam Kurma',
+  '咖喱鸡',
+  '印度回教奶油咖喱鸡',
+  'indian',
+  ARRAY['lunch', 'dinner'],
+  20,
+  35,
+  5,
+  'medium',
+  true,
+  9.50
+);
+
+-- 107. Ikan Bakar Cencaru (烤竹荚鱼)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, contains_seafood, estimated_cost)
+VALUES (
+  'Grilled Scad Fish',
+  'Ikan Bakar Cencaru',
+  '烤竹荚鱼',
+  '参巴烤竹荚鱼配青柠',
+  'malay',
+  ARRAY['lunch', 'dinner'],
+  15,
+  20,
+  3,
+  'easy',
+  true,
+  true,
+  8.50
+);
+
+-- 108. Nasi Goreng Thai (泰式炒饭)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Thai Fried Rice',
+  'Nasi Goreng Thai',
+  '泰式炒饭',
+  '泰式炒饭配虾和罗勒叶',
+  'thai',
+  ARRAY['lunch', 'dinner'],
+  15,
+  12,
+  2,
+  'easy',
+  true,
+  7.00
+);
+
+-- 109. Udang Masak Kicap (豉油虾)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, contains_seafood, estimated_cost)
+VALUES (
+  'Soy Sauce Prawns',
+  'Udang Masak Kicap',
+  '豉油虾',
+  '马来式豉油虾配辣椒',
+  'malay',
+  ARRAY['lunch', 'dinner'],
+  10,
+  15,
+  3,
+  'easy',
+  true,
+  true,
+  11.00
+);
+
+-- 110. Roti Planta (植物牛油煎饼)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Planta Roti',
+  'Roti Planta',
+  '植物牛油煎饼',
+  '印度煎饼配植物牛油和糖',
+  'indian',
+  ARRAY['breakfast', 'snack'],
+  20,
+  15,
+  4,
+  'medium',
+  true,
+  4.00
+);
+
+-- 111. Ayam Goreng Kunyit (黄姜炸鸡)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Turmeric Fried Chicken',
+  'Ayam Goreng Kunyit',
+  '黄姜炸鸡',
+  '黄姜腌制炸鸡，金黄酥脆',
+  'malay',
+  ARRAY['lunch', 'dinner'],
+  30,
+  20,
+  4,
+  'easy',
+  true,
+  8.50
+);
+
+-- 112. Ikan Pari Bakar Sambal (参巴烤魔鬼鱼)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, contains_seafood, estimated_cost)
+VALUES (
+  'Sambal Grilled Stingray',
+  'Ikan Pari Bakar Sambal',
+  '参巴烤魔鬼鱼',
+  '辣参巴烤魔鬼鱼',
+  'malay',
+  ARRAY['lunch', 'dinner'],
+  15,
+  20,
+  2,
+  'easy',
+  true,
+  true,
+  12.00
+);
+
+-- 113. Nasi Goreng Belacan (虾膏炒饭)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Shrimp Paste Fried Rice',
+  'Nasi Goreng Belacan',
+  '虾膏炒饭',
+  '虾膏炒饭配江鱼仔',
+  'malay',
+  ARRAY['lunch', 'dinner'],
+  15,
+  12,
+  3,
+  'easy',
+  true,
+  6.50
+);
+
+-- 114. Gulai Ikan (鱼咖喱)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, contains_seafood, estimated_cost)
+VALUES (
+  'Fish Curry',
+  'Gulai Ikan',
+  '鱼咖喱',
+  '马来黄姜鱼咖喱',
+  'malay',
+  ARRAY['lunch', 'dinner'],
+  15,
+  25,
+  4,
+  'easy',
+  true,
+  true,
+  9.00
+);
+
+-- 115. Kuih Ketayap (绿煎饼卷)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, is_vegetarian, estimated_cost)
+VALUES (
+  'Pandan Crepes',
+  'Kuih Ketayap',
+  '绿煎饼卷',
+  '班兰煎饼卷椰丝糖',
+  'malay',
+  ARRAY['snack', 'dessert'],
+  35,
+  25,
+  12,
+  'medium',
+  true,
+  true,
+  5.50
+);
+
+-- 116. Ikan Keli Masak Lemak (鲶鱼椰奶咖喱)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, contains_seafood, estimated_cost)
+VALUES (
+  'Catfish Coconut Curry',
+  'Ikan Keli Masak Lemak',
+  '鲶鱼椰奶咖喱',
+  '鲶鱼黄姜椰奶咖喱',
+  'malay',
+  ARRAY['lunch', 'dinner'],
+  15,
+  25,
+  4,
+  'easy',
+  true,
+  true,
+  8.00
+);
+
+-- 117. Mee Goreng Mamak (印度炒面)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Mamak Fried Noodles',
+  'Mee Goreng Mamak',
+  '印度炒面',
+  '印度回教辣炒黄面',
+  'indian',
+  ARRAY['lunch', 'dinner'],
+  15,
+  15,
+  2,
+  'easy',
+  true,
+  6.00
+);
+
+-- 118. Sotong Goreng Tepung (炸鱿鱼)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, contains_seafood, estimated_cost)
+VALUES (
+  'Fried Squid',
+  'Sotong Goreng Tepung',
+  '炸鱿鱼',
+  '酥炸鱿鱼配辣椒酱',
+  'malay',
+  ARRAY['lunch', 'dinner', 'snack'],
+  20,
+  15,
+  4,
+  'easy',
+  true,
+  true,
+  10.00
+);
+
+-- 119. Nasi Goreng Ikan Masin (咸鱼炒饭)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Salted Fish Fried Rice',
+  'Nasi Goreng Ikan Masin',
+  '咸鱼炒饭',
+  '咸鱼炒饭配鸡肉粒',
+  'chinese',
+  ARRAY['lunch', 'dinner'],
+  15,
+  12,
+  3,
+  'easy',
+  false,
+  7.00
+);
+
+-- 120. Bubur Lambuk (开斋粥)
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Ramadan Porridge',
+  'Bubur Lambuk',
+  '开斋粥',
+  '斋戒月香料粥配牛肉和蔬菜',
+  'malay',
+  ARRAY['lunch', 'dinner'],
+  20,
+  45,
+  8,
+  'medium',
+  true,
+  7.50
+);
