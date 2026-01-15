@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const { data: allRecipes, error: recipesError } = await query;
+    const { data: rawRecipes, error: recipesError } = await query;
 
     if (recipesError) {
       console.error('❌ 查询菜品失败:', recipesError);
@@ -52,14 +52,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!allRecipes || allRecipes.length === 0) {
+    if (!rawRecipes || rawRecipes.length === 0) {
       return NextResponse.json(
         { error: '数据库中没有可用的菜品' },
         { status: 404 }
       );
     }
 
-    console.log(`✅ 查询到 ${allRecipes.length} 道菜品`);
+    // 🧹 数据清洗与去重：按中文名去重，避免重复导入导致同名菜品泛滥
+    const uniqueRecipesMap = new Map<string, any>();
+    rawRecipes.forEach(recipe => {
+      // 优先使用中文名作为唯一键，如果没有则用英文名
+      const key = recipe.name_zh || recipe.name_en;
+      if (!key) return;
+      
+      // 如果还没存过，或者新记录信息更全（这里简单取 ID 较小的作为基准，或者保留任意一个）
+      if (!uniqueRecipesMap.has(key)) {
+        uniqueRecipesMap.set(key, recipe);
+      }
+    });
+    
+    const allRecipes = Array.from(uniqueRecipesMap.values());
+    console.log(`✅ 查询到 ${rawRecipes.length} 条记录，去重后剩余 ${allRecipes.length} 道独特菜品`);
 
     // 🔧 辅助函数：检查 meal_type 是否匹配
     const matchesMealType = (mealType: any, targetType: string): boolean => {
