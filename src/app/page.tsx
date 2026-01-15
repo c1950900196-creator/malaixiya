@@ -558,22 +558,13 @@ export default function Home() {
       let mergedItems = dbResult.shopping_list || [];
       console.log('✅ 数据库返回购物清单：', mergedItems.length, '项');
       
-      // 如果数据库没有返回购物清单（例如食材关联未配置），使用预设模板
-      if (mergedItems.length < 5) {
-        console.log('⚠️ 数据库购物清单太少，使用预设模板');
-        const defaultItems = getDefaultShoppingList();
-        mergedItems = mergeShoppingItems([...mergedItems, ...defaultItems]);
-        console.log('✅ 使用预设模板后购物清单：', mergedItems.length, '项');
+      // 移除预设模板，如果没有购物清单则报错
+      if (mergedItems.length === 0) {
+        throw new Error('购物清单生成失败：所选菜品尚未配置食材数据');
       }
       
       // 保存购物清单
-      if (mergedItems.length > 0) {
-        await saveShoppingListFromAI(user.id, planData.id, mergedItems, supabase);
-      } else {
-        console.log('⚠️ 没有购物清单数据，使用完整预设模板');
-        const defaultItems = getDefaultShoppingList();
-        await saveShoppingListFromAI(user.id, planData.id, defaultItems, supabase);
-      }
+      await saveShoppingListFromAI(user.id, planData.id, mergedItems, supabase);
       
       setProgress(100);
       setLoadingStep('膳食计划创建成功！');

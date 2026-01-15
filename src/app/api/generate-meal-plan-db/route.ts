@@ -136,11 +136,24 @@ export async function POST(request: NextRequest) {
 
     // 生成购物清单
     const recipeIds: number[] = [];
+    const recipeNames: string[] = [];
     for (const day of mealPlan) {
-      if (day.meals.breakfast?.id) recipeIds.push(day.meals.breakfast.id);
-      if (day.meals.lunch?.id) recipeIds.push(day.meals.lunch.id);
-      if (day.meals.dinner?.id) recipeIds.push(day.meals.dinner.id);
+      if (day.meals.breakfast?.id) {
+        recipeIds.push(day.meals.breakfast.id);
+        recipeNames.push(day.meals.breakfast.name_zh);
+      }
+      if (day.meals.lunch?.id) {
+        recipeIds.push(day.meals.lunch.id);
+        recipeNames.push(day.meals.lunch.name_zh);
+      }
+      if (day.meals.dinner?.id) {
+        recipeIds.push(day.meals.dinner.id);
+        recipeNames.push(day.meals.dinner.name_zh);
+      }
     }
+
+    console.log('🔍 生成的菜品 IDs:', recipeIds);
+    console.log('🔍 生成的菜品名称:', recipeNames);
 
     let shoppingList: any[] = [];
 
@@ -152,7 +165,6 @@ export async function POST(request: NextRequest) {
           ingredient_id,
           quantity,
           unit,
-          is_optional,
           ingredients (
             id,
             name_zh,
@@ -168,7 +180,28 @@ export async function POST(request: NextRequest) {
 
       if (ingredientsError) {
         console.error('⚠️ 查询食材失败:', ingredientsError);
-      } else if (recipeIngredients && recipeIngredients.length > 0) {
+        return NextResponse.json(
+          { error: '查询食材关联失败', details: ingredientsError.message },
+          { status: 500 }
+        );
+      }
+      
+      console.log(`🔍 查询到 ${recipeIngredients?.length || 0} 个食材关联`);
+      
+      if (!recipeIngredients || recipeIngredients.length === 0) {
+        console.error('❌ 没有找到任何食材关联');
+        console.error('📋 当前生成的菜品:', recipeNames);
+        return NextResponse.json(
+          { 
+            error: '购物清单生成失败：这些菜品尚未配置食材数据',
+            recipes: recipeNames,
+            hint: '请在数据库中为这些菜品配置食材关联'
+          },
+          { status: 404 }
+        );
+      }
+
+      if (recipeIngredients && recipeIngredients.length > 0) {
         console.log(`✅ 查询到 ${recipeIngredients.length} 个食材关联`);
 
         // 汇总食材（合并相同食材，数量相加）
@@ -221,8 +254,6 @@ export async function POST(request: NextRequest) {
         });
 
         console.log(`✅ 生成了 ${shoppingList.length} 项购物清单`);
-      } else {
-        console.warn('⚠️ 没有找到任何食材关联，请检查 recipe_ingredients 表');
       }
     }
 
