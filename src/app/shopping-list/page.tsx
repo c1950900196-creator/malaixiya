@@ -1,21 +1,27 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ShoppingListView } from '@/components/shopping/ShoppingListView';
 import { createBrowserClient } from '@/lib/supabase';
 import { exportShoppingListToPDF } from '@/lib/pdf-export';
 import { ShoppingListItem, Ingredient } from '@/types/database.types';
+import { useShoppingListStore } from '@/store/shoppingListStore';
 
 export default function ShoppingListPage() {
   const [items, setItems] = useState<(ShoppingListItem & { ingredient?: Ingredient })[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentMealPlanId, setCurrentMealPlanId] = useState<string | null>(null);
   
-  useEffect(() => {
-    loadShoppingList();
-  }, []);
+  // 使用缓存 store
+  const { 
+    setCache, 
+    getCache, 
+    isCacheValid, 
+    updateItem: updateCacheItem 
+  } = useShoppingListStore();
   
-  const loadShoppingList = async () => {
+  const loadShoppingList = useCallback(async (forceRefresh: boolean = false) => {
     try {
       const supabase = createBrowserClient();
       const { data: { user } } = await supabase.auth.getUser();
@@ -42,6 +48,20 @@ export default function ShoppingListPage() {
       }
       
       const mealPlan = mealPlans[0];
+      setCurrentMealPlanId(mealPlan.id);
+      
+      // 检查缓存是否有效（非强制刷新时）
+      if (!forceRefresh && isCacheValid(mealPlan.id)) {
+        const cachedItems = getCache(mealPlan.id);
+        if (cachedItems && cachedItems.length > 0) {
+          console.log('✅ 使用缓存的购物清单');
+          setItems(cachedItems);
+          setIsLoading(false);
+          return;
+        }
+      }
+      
+      console.log('🔄 从数据库加载购物清单...');
       
       // 获取最新的购物清单
       const { data: lists, error: listError } = await supabase
@@ -79,14 +99,24 @@ export default function ShoppingListPage() {
       
       if (itemsError) throw itemsError;
       
-      setItems(itemsData || []);
+      const loadedItems = itemsData || [];
+      setItems(loadedItems);
+      
+      // 更新缓存
+      setCache(mealPlan.id, loadedItems);
+      console.log('✅ 购物清单已缓存');
+      
       setIsLoading(false);
     } catch (error) {
       console.error('Error:', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [getCache, isCacheValid, setCache]);
+  
+  useEffect(() => {
+    loadShoppingList();
+  }, [loadShoppingList]);
   
   const handleToggleItem = async (itemId: string, isPurchased: boolean) => {
     try {
@@ -103,9 +133,17 @@ export default function ShoppingListPage() {
       setItems(items.map(item =>
         item.id === itemId ? { ...item, is_purchased: isPurchased } : item
       ));
+      
+      // 同步更新缓存
+      updateCacheItem(itemId, { is_purchased: isPurchased });
     } catch (error) {
       console.error('Error updating item:', error);
     }
+  };
+  
+  const handleRefresh = () => {
+    setIsLoading(true);
+    loadShoppingList(true); // 强制刷新
   };
   
   const handleExportPDF = () => {
@@ -133,10 +171,9 @@ export default function ShoppingListPage() {
           items={items}
           onToggleItem={handleToggleItem}
           onExportPDF={handleExportPDF}
+          onRefresh={handleRefresh}
         />
       </div>
     </MainLayout>
   );
 }
-
-

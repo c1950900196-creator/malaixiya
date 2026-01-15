@@ -23,7 +23,8 @@ export const MealPlanCalendar: React.FC<MealPlanCalendarProps> = ({
   onMealClick,
   onReplaceMeal,
 }) => {
-  const weekDays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+  // 一周从周日开始
+  const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
   
   const getMealsForDate = (date: Date) => {
     const filtered = meals.filter((meal) => {
@@ -104,7 +105,8 @@ export const MealPlanCalendar: React.FC<MealPlanCalendarProps> = ({
       <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-hide">
         {Array.from({ length: 7 }, (_, i) => {
           const date = new Date(selectedDate);
-          date.setDate(date.getDate() - date.getDay() + i + 1);
+          // 从周日开始：直接用 getDay() 作为偏移（周日=0, 周一=1, ...）
+          date.setDate(date.getDate() - date.getDay() + i);
           const isSelected = date.toDateString() === selectedDate.toDateString();
           const calories = getDailyCalories(date);
           

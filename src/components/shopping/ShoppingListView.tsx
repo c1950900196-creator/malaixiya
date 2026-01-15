@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/Checkbox';
 import { Badge } from '@/components/ui/Badge';
 import { ShoppingListItem, Ingredient } from '@/types/database.types';
 import { formatPrice } from '@/lib/utils';
-import { Package, Download, Printer } from 'lucide-react';
+import { Package, Download, Printer, RefreshCw } from 'lucide-react';
 
 interface GroupedItems {
   [category: string]: (ShoppingListItem & { ingredient?: Ingredient })[];
@@ -17,12 +17,14 @@ interface ShoppingListViewProps {
   items: (ShoppingListItem & { ingredient?: Ingredient })[];
   onToggleItem: (itemId: string, isPurchased: boolean) => void;
   onExportPDF: () => void;
+  onRefresh?: () => void; // 可选的刷新回调
 }
 
 export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
   items,
   onToggleItem,
   onExportPDF,
+  onRefresh,
 }) => {
   const [filterCategory, setFilterCategory] = useState<string>('all');
   
@@ -109,6 +111,16 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
           </p>
         </div>
         <div className="flex gap-2">
+          {onRefresh && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              leftIcon={<RefreshCw className="w-4 h-4" />}
+              onClick={onRefresh}
+            >
+              刷新
+            </Button>
+          )}
           <Button variant="outline" size="sm" leftIcon={<Printer className="w-4 h-4" />}>
             打印清单
           </Button>

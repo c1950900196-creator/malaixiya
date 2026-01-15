@@ -310,176 +310,109 @@ export default function Home() {
       
       setProfile({ id: user.id, ...data } as any);
       
-      // 生成膳食计划
+      // ==================== 生成膳食计划 v3.0 ====================
       setProgress(40);
       setLoadingStep('正在生成您的膳食计划 (21顿饭)...');
-      console.log('Generating meal plan...');
+      console.log('🚀 开始生成膳食计划 v3.0...');
       
-      // 获取所有食谱
-      const { data: recipes, error: recipesError } = await supabase
-        .from('recipes')
-        .select('*, nutrition:recipe_nutrition(*)');
-      
-      if (recipesError) {
-        console.error('Error fetching recipes:', recipesError);
-        throw new Error('无法加载食谱数据');
-      }
-      
-      if (!recipes || recipes.length === 0) {
-        throw new Error('食谱数据库为空，请先执行 seed-recipes.sql');
-      }
-      
-      // 使用数据库生成膳食计划（不再使用豆包AI）
-      const userProfile = {
-        id: user.id,
-        full_name: data.full_name,
-        age: data.age,
-        gender: data.gender,
-        weight: data.weight,
-        height: data.height,
-        health_goal: data.health_goal,
-        weekly_budget: data.weekly_budget,
-        activity_level: data.activity_level,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-      
-      const restrictionsArray = data.restrictions || [];
-      
-      // 一次性从数据库生成完整的 7 天膳食计划
-      setProgress(40);
-      setLoadingStep('正在从数据库生成膳食计划...');
-      
-      console.log('📤 从数据库生成膳食计划...');
-      
+      // 调用新的 API 生成膳食计划
       const dbResponse = await fetch('/api/generate-meal-plan-db', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userProfile,
-          restrictions: restrictionsArray,
+          userProfile: {
+            age: data.age,
+            gender: data.gender,
+            weight: data.weight,
+            height: data.height,
+            health_goal: data.health_goal,
+            weekly_budget: data.weekly_budget,
+            activity_level: data.activity_level,
+          },
+          restrictions: data.restrictions || [],
           days: 7,
           peopleCount: data.people_count || 2,
-          weeklyBudget: data.weekly_budget || null,
+          weeklyBudget: data.weekly_budget || 250,
         }),
       });
       
       if (!dbResponse.ok) {
         const errorData = await dbResponse.json().catch(() => ({}));
-        console.error('❌ 数据库生成膳食计划失败:', errorData);
+        console.error('❌ 膳食计划生成失败:', errorData);
         throw new Error(errorData.error || '膳食计划生成失败');
       }
       
       const dbResult = await dbResponse.json();
-      console.log('✅ 数据库生成膳食计划成功:', dbResult);
+      console.log('✅ 膳食计划生成成功:', dbResult);
       
-      const allDayPlans = dbResult.plan || [];
-      
-      // 构建完整的 aiResult
-      const aiResult = { plan: allDayPlans };
-      
-      console.log('📋 Processing meal plan with', aiResult.plan.length, 'days');
-      
-      // 转换 AI 生成的计划格式
-      const mealPlan: any[] = [];
-      const recipesMap = new Map(recipes.map(r => [r.id, r]));
-      
-      console.log('📦 Recipe map size:', recipesMap.size);
-      
-      // 获取当前日期作为起始日期（周一）
-      const today = new Date();
-      const dayOfWeek = today.getDay(); // 0 = 周日, 1 = 周一, ...
-      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 计算到周一的偏移
-      const monday = new Date(today);
-      monday.setDate(today.getDate() + mondayOffset);
-      monday.setHours(0, 0, 0, 0); // 重置时间为午夜
-      
-      console.log('📅 Week start (Monday):', monday.toISOString().split('T')[0]);
-      
-      aiResult.plan.forEach((dayPlan: any, dayIndex: number) => {
-        // 安全检查
-        if (!dayPlan || !dayPlan.meals || typeof dayPlan.meals !== 'object') {
-          console.warn(`⚠️ Invalid day plan at index ${dayIndex}:`, dayPlan);
-          return;
-        }
-        
-        // 计算实际日期（从周一开始）
-        const actualDate = new Date(monday);
-        actualDate.setDate(monday.getDate() + dayIndex);
-        const dateString = actualDate.toISOString().split('T')[0]; // YYYY-MM-DD
-        
-        console.log(`Day ${dayIndex + 1} (${dayPlan.day || 'Unknown'}): ${dateString}`);
-        
-        ['breakfast', 'lunch', 'dinner'].forEach(mealType => {
-          const aiMeal = dayPlan.meals?.[mealType];
-          if (!aiMeal || aiMeal === null) {
-            console.warn(`⚠️ Missing meal for ${mealType} on day ${dayIndex + 1}`);
-            // 如果缺失，从同类型的菜谱中随机选一个
-            const sameTypeRecipes = recipes.filter(r => 
-              Array.isArray(r.meal_type) && r.meal_type.includes(mealType)
-            );
-            if (sameTypeRecipes.length > 0) {
-              const recipe = sameTypeRecipes[Math.floor(Math.random() * sameTypeRecipes.length)];
-              console.log(`  🔄 Using fallback ${mealType}: ${recipe.name_zh || recipe.name_ms}`);
-              mealPlan.push({
-                date: dateString,
-                mealType,
-                recipe,
-              });
-            }
-            return;
-          }
-          
-          const nameZh = aiMeal.name_zh || '';
-          const nameEn = aiMeal.name_en || '';
-          const namMs = aiMeal.name_ms || '';
-          
-          console.log(`  ${mealType}: ${nameZh} (${nameEn})`);
-          
-          // 在数据库中查找匹配的菜谱（通过名称模糊匹配）
-          let recipe = recipes.find(r => 
-            (nameZh && r.name_zh && r.name_zh.includes(nameZh.substring(0, 2))) ||
-            (nameEn && r.name_en && r.name_en.toLowerCase().includes(nameEn.toLowerCase().substring(0, 4))) ||
-            (namMs && r.name_ms && r.name_ms.toLowerCase().includes(namMs.toLowerCase().substring(0, 4)))
-          );
-          
-          // 如果没找到，就从同类型的菜谱中随机选一个
-          if (!recipe) {
-            const sameTypeRecipes = recipes.filter(r => 
-              Array.isArray(r.meal_type) && r.meal_type.includes(mealType)
-            );
-            if (sameTypeRecipes.length > 0) {
-              recipe = sameTypeRecipes[Math.floor(Math.random() * sameTypeRecipes.length)];
-              console.log(`  ⚠️ Recipe not found, using random ${mealType}: ${recipe.name_zh || recipe.name_ms}`);
-            } else {
-              console.warn(`⚠️ No recipes found for ${mealType}`);
-              return;
-            }
-          } else {
-            console.log(`  ✅ Found recipe: ${recipe.name_zh || recipe.name_ms}`);
-          }
-          
-          mealPlan.push({
-            date: dateString, // 使用计算出的实际日期
-            mealType,
-            recipe,
-          });
-        });
-      });
-      
-      console.log('✅ Generated meal plan:', mealPlan.length, 'meals');
-      
-      if (mealPlan.length === 0) {
-        throw new Error('AI 生成的膳食计划中没有有效的餐食，请重试');
+      // 打印统计信息
+      if (dbResult.summary) {
+        console.log(`📊 统计: ${dbResult.summary.unique_dishes} 道不同菜品, ${dbResult.summary.total_dishes} 餐`);
+        console.log(`🔥 热量: ${dbResult.summary.avg_daily_calories} kcal/天 (目标: ${dbResult.summary.target_daily_calories})`);
+        console.log(`💰 预算: RM${dbResult.summary.total_cost?.toFixed(2)} / RM${dbResult.summary.weekly_budget?.toFixed(2)}`);
       }
       
-      // 计算实际的开始和结束日期
+      // 打印调试日志
+      if (dbResult.debug?.logs) {
+        console.log('📋 详细日志:');
+        dbResult.debug.logs.forEach((log: string) => console.log(`   ${log}`));
+      }
+      
+      setProgress(60);
+      setLoadingStep('正在保存膳食计划...');
+      
+      // 获取本周一的日期
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      const monday = new Date(today);
+      monday.setDate(today.getDate() + mondayOffset);
+      monday.setHours(0, 0, 0, 0);
+      
       const startDate = monday.toISOString().split('T')[0];
       const sunday = new Date(monday);
       sunday.setDate(monday.getDate() + 6);
       const endDate = sunday.toISOString().split('T')[0];
       
-      console.log(`📅 Meal plan period: ${startDate} to ${endDate}`);
+      // 转换 API 返回的数据为前端需要的格式
+      const mealPlan: any[] = [];
+      const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      
+      (dbResult.plan || []).forEach((dayPlan: any, dayIndex: number) => {
+        if (!dayPlan || !dayPlan.meals) return;
+        
+        const actualDate = new Date(monday);
+        actualDate.setDate(monday.getDate() + dayIndex);
+        const dateString = actualDate.toISOString().split('T')[0];
+        
+        ['breakfast', 'lunch', 'dinner'].forEach(mealType => {
+          const meal = dayPlan.meals?.[mealType];
+          if (!meal) return;
+          
+          mealPlan.push({
+            date: dateString,
+            mealType,
+            recipe: {
+              id: meal.id,
+              name_zh: meal.name_zh,
+              name_en: meal.name_en,
+              name_ms: meal.name_ms,
+              description: meal.description,
+              prep_time: meal.prep_time,
+              cook_time: meal.cook_time,
+              cuisine_type: meal.cuisine_type,
+              estimated_cost: meal.estimated_cost,
+              meal_type: [mealType],
+            },
+          });
+        });
+      });
+      
+      console.log(`✅ 解析完成: ${mealPlan.length} 餐`);
+      
+      if (mealPlan.length === 0) {
+        throw new Error('膳食计划生成失败，请重试');
+      }
       
       // 保存膳食计划
       const { data: planData, error: planError } = await supabase
@@ -555,13 +488,13 @@ export default function Home() {
       setProgress(75);
       setLoadingStep('正在生成购物清单...');
       
-      // 使用数据库返回的购物清单（不再调用豆包AI）
-      let mergedItems = dbResult.shopping_list || [];
-      console.log('✅ 数据库返回购物清单：', mergedItems.length, '项');
+      // 使用 API 返回的购物清单（已在后端汇总）
+      const mergedItems = dbResult.shopping_list || [];
+      console.log('✅ 购物清单生成完成：', mergedItems.length, '项');
       
-      // 移除预设模板，如果没有购物清单则报错
+      // 如果购物清单为空，打印警告但不阻止流程
       if (mergedItems.length === 0) {
-        throw new Error('购物清单生成失败：所选菜品尚未配置食材数据');
+        console.warn('⚠️ 购物清单为空，部分菜品可能缺少食材数据');
       }
       
       // 保存购物清单
