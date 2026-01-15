@@ -82,13 +82,33 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 按 meal_type 分组 (meal_type 是数组类型，需要用 includes 检查)
-    const breakfasts = filteredRecipes.filter(r => r.meal_type && r.meal_type.includes('breakfast'));
-    const lunches = filteredRecipes.filter(r => r.meal_type && r.meal_type.includes('lunch'));
-    const dinners = filteredRecipes.filter(r => r.meal_type && r.meal_type.includes('dinner'));
-    const snacks = filteredRecipes.filter(r => r.meal_type && r.meal_type.includes('snack'));
+    // 🔧 辅助函数：检查 meal_type 是否匹配（支持数组和字符串两种格式）
+    const matchesMealType = (mealType: any, targetType: string): boolean => {
+      if (!mealType) return false;
+      // 如果是数组，使用 includes
+      if (Array.isArray(mealType)) {
+        return mealType.includes(targetType);
+      }
+      // 如果是字符串，检查是否相等或包含
+      if (typeof mealType === 'string') {
+        return mealType === targetType || mealType.includes(targetType);
+      }
+      return false;
+    };
 
-    console.log(`早餐: ${breakfasts.length}, 午餐: ${lunches.length}, 晚餐: ${dinners.length}, 小吃: ${snacks.length}`);
+    // 按 meal_type 分组 (支持数组和字符串两种格式)
+    const breakfasts = filteredRecipes.filter(r => matchesMealType(r.meal_type, 'breakfast'));
+    const lunches = filteredRecipes.filter(r => matchesMealType(r.meal_type, 'lunch'));
+    const dinners = filteredRecipes.filter(r => matchesMealType(r.meal_type, 'dinner'));
+    const snacks = filteredRecipes.filter(r => matchesMealType(r.meal_type, 'snack'));
+
+    console.log(`🍳 早餐: ${breakfasts.length}, 🍱 午餐: ${lunches.length}, 🍽️ 晚餐: ${dinners.length}, 🍿 小吃: ${snacks.length}`);
+    
+    // 🚨 检查早餐菜品数量，如果太少则警告
+    if (breakfasts.length < 4) {
+      console.warn(`⚠️ 警告：早餐菜品只有 ${breakfasts.length} 道，可能导致重复过多！`);
+      console.log('🔍 可用早餐菜品:', breakfasts.map(r => r.name_zh).join(', '));
+    }
 
     // 随机打乱函数
     const shuffle = <T,>(array: T[]): T[] => {
