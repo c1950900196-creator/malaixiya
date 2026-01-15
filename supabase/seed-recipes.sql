@@ -2136,3 +2136,180 @@ VALUES (
   true,
   7.50
 );
+
+-- ========== 新增早餐菜品 (121-130) ==========
+
+-- 121. 豆浆油条
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, is_vegetarian, estimated_cost)
+VALUES (
+  'Soy Milk with Fried Dough',
+  'Tauhu Fa dan Youtiao',
+  '豆浆油条',
+  '传统中式早餐，豆浆配炸油条',
+  'chinese',
+  ARRAY['breakfast'],
+  10,
+  5,
+  2,
+  'easy',
+  true,
+  true,
+  3.50
+);
+
+-- 122. 广东粥
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Cantonese Porridge',
+  'Bubur Kanton',
+  '广东粥',
+  '滑嫩白粥配皮蛋瘦肉',
+  'chinese',
+  ARRAY['breakfast'],
+  15,
+  30,
+  3,
+  'easy',
+  false,
+  4.50
+);
+
+-- 123. 马来糕
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, is_vegetarian, estimated_cost)
+VALUES (
+  'Steamed Sponge Cake',
+  'Kuih Peng',
+  '马来糕',
+  '蒸糕点，松软香甜',
+  'chinese',
+  ARRAY['breakfast', 'snack'],
+  20,
+  25,
+  8,
+  'medium',
+  true,
+  true,
+  5.00
+);
+
+-- 124. 经济面
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Economy Noodles',
+  'Mee Ekonomi',
+  '经济面',
+  '干捞面配叉烧和云吞',
+  'chinese',
+  ARRAY['breakfast', 'lunch'],
+  10,
+  10,
+  2,
+  'easy',
+  false,
+  5.50
+);
+
+-- 125. 三文治
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Breakfast Sandwich',
+  'Sandwic Sarapan',
+  '早餐三文治',
+  '火腿鸡蛋三文治配咖啡',
+  'western',
+  ARRAY['breakfast'],
+  10,
+  5,
+  2,
+  'easy',
+  false,
+  6.00
+);
+
+-- 126. 炒米粉
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Fried Rice Vermicelli',
+  'Mee Hoon Goreng Pagi',
+  '早餐炒米粉',
+  '清淡炒米粉配蔬菜',
+  'chinese',
+  ARRAY['breakfast'],
+  10,
+  12,
+  2,
+  'easy',
+  true,
+  4.50
+);
+
+-- 127. 咖喱面包
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, is_vegetarian, estimated_cost)
+VALUES (
+  'Curry Bun',
+  'Pau Kari',
+  '咖喱包',
+  '烘焙咖喱面包，内馅咖喱土豆',
+  'chinese',
+  ARRAY['breakfast', 'snack'],
+  30,
+  20,
+  6,
+  'medium',
+  true,
+  true,
+  4.00
+);
+
+-- 128. 豆腐花
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, is_vegetarian, estimated_cost)
+VALUES (
+  'Soft Tofu Dessert',
+  'Tauhu Fa Pagi',
+  '早餐豆腐花',
+  '滑嫩豆腐花配糖浆',
+  'chinese',
+  ARRAY['breakfast'],
+  10,
+  15,
+  4,
+  'easy',
+  true,
+  true,
+  3.00
+);
+
+-- 129. 薄饼卷
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, estimated_cost)
+VALUES (
+  'Egg Crepe',
+  'Apong Kulit Telur',
+  '鸡蛋薄饼',
+  '薄饼卷花生糖',
+  'chinese',
+  ARRAY['breakfast', 'snack'],
+  15,
+  10,
+  4,
+  'easy',
+  true,
+  3.50
+);
+
+-- 130. 印度Thosai
+INSERT INTO recipes (name_en, name_ms, name_zh, description, cuisine_type, meal_type, prep_time, cook_time, servings, difficulty, is_halal, is_vegetarian, estimated_cost)
+VALUES (
+  'South Indian Crepe',
+  'Thosai',
+  '印度煎饼Thosai',
+  '薄脆印度煎饼配豆汁咖喱',
+  'indian',
+  ARRAY['breakfast'],
+  25,
+  15,
+  4,
+  'medium',
+  true,
+  true,
+  4.50
+);

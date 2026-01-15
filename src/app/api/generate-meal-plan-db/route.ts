@@ -106,16 +106,25 @@ export async function POST(request: NextRequest) {
       usedRecipes: Map<number, number>,
       maxUsePerWeek: number = 2
     ): any => {
+      if (availableRecipes.length === 0) {
+        throw new Error('没有可用的菜品');
+      }
+
       // 过滤出可用的菜品（未达到使用上限）
       const selectableRecipes = availableRecipes.filter(
         recipe => (usedRecipes.get(recipe.id) || 0) < maxUsePerWeek
       );
 
       if (selectableRecipes.length === 0) {
-        // 如果所有菜品都达到上限，重置计数器并随机选择
-        console.warn('⚠️ 所有菜品都达到使用上限，重置计数器');
+        // 如果所有菜品都达到上限，重置计数器并重新随机打乱
+        console.warn('⚠️ 所有菜品都达到使用上限，重置计数器并重新打乱');
         usedRecipes.clear();
-        return availableRecipes[Math.floor(Math.random() * availableRecipes.length)];
+        
+        // 重新打乱菜品，避免按原顺序重复
+        const reshuffled = shuffle(availableRecipes);
+        const selected = reshuffled[0];
+        usedRecipes.set(selected.id, 1);
+        return selected;
       }
 
       // 优先选择使用次数最少的菜品

@@ -2515,6 +2515,192 @@ WHERE r.name_zh = '开斋粥'
   AND i.name_zh IN ('白米', '牛肉', '蔬菜', '香料')
 ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
 
--- ========== 完成！所有120道菜的食材关联已配置 ==========
--- 总计：90道(原有) + 30道(新增) = 120道菜品
+-- ========== 新增早餐菜品食材关联 (121-130) ==========
+
+-- 豆浆油条
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '豆浆' THEN 0.5
+    WHEN '油条' THEN 0.2
+  END,
+  CASE i.name_zh
+    WHEN '豆浆' THEN 'liter'
+    WHEN '油条' THEN 'pack'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '豆浆油条'
+  AND i.name_zh IN ('豆浆', '油条')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 广东粥
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '白米' THEN 0.2
+    WHEN '猪肉' THEN 0.15
+    WHEN '皮蛋' THEN 0.05
+    WHEN '生姜' THEN 0.02
+  END,
+  CASE i.name_zh
+    WHEN '白米' THEN 'kg'
+    WHEN '猪肉' THEN 'kg'
+    WHEN '皮蛋' THEN 'pack'
+    WHEN '生姜' THEN 'kg'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '广东粥'
+  AND i.name_zh IN ('白米', '猪肉', '皮蛋', '生姜')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 马来糕
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '面粉' THEN 0.3
+    WHEN '糖' THEN 0.2
+    WHEN '鸡蛋' THEN 0.1
+  END,
+  CASE i.name_zh
+    WHEN '面粉' THEN 'kg'
+    WHEN '糖' THEN 'kg'
+    WHEN '鸡蛋' THEN 'tray'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '马来糕'
+  AND i.name_zh IN ('面粉', '糖', '鸡蛋')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 经济面
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '面条' THEN 0.3
+    WHEN '猪肉' THEN 0.15
+    WHEN '云吞' THEN 0.1
+    WHEN '酱油' THEN 0.03
+  END,
+  CASE i.name_zh
+    WHEN '面条' THEN 'kg'
+    WHEN '猪肉' THEN 'kg'
+    WHEN '云吞' THEN 'pack'
+    WHEN '酱油' THEN 'bottle'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '经济面'
+  AND i.name_zh IN ('面条', '猪肉', '云吞', '酱油')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 早餐三文治
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '面包' THEN 0.2
+    WHEN '火腿' THEN 0.1
+    WHEN '鸡蛋' THEN 0.05
+    WHEN '黄油' THEN 0.03
+  END,
+  CASE i.name_zh
+    WHEN '面包' THEN 'loaf'
+    WHEN '火腿' THEN 'pack'
+    WHEN '鸡蛋' THEN 'tray'
+    WHEN '黄油' THEN 'block'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '早餐三文治'
+  AND i.name_zh IN ('面包', '火腿', '鸡蛋', '黄油')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 早餐炒米粉
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '米粉' THEN 0.3
+    WHEN '蔬菜' THEN 0.2
+    WHEN '鸡蛋' THEN 0.05
+  END,
+  CASE i.name_zh
+    WHEN '米粉' THEN 'kg'
+    WHEN '蔬菜' THEN 'kg'
+    WHEN '鸡蛋' THEN 'tray'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '早餐炒米粉'
+  AND i.name_zh IN ('米粉', '蔬菜', '鸡蛋')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 咖喱包
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '面粉' THEN 0.3
+    WHEN '土豆' THEN 0.2
+    WHEN '咖喱' THEN 0.08
+  END,
+  CASE i.name_zh
+    WHEN '面粉' THEN 'kg'
+    WHEN '土豆' THEN 'kg'
+    WHEN '咖喱' THEN 'jar'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '咖喱包'
+  AND i.name_zh IN ('面粉', '土豆', '咖喱')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 早餐豆腐花
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '豆腐' THEN 0.3
+    WHEN '糖' THEN 0.08
+  END,
+  CASE i.name_zh
+    WHEN '豆腐' THEN 'block'
+    WHEN '糖' THEN 'kg'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '早餐豆腐花'
+  AND i.name_zh IN ('豆腐', '糖')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 鸡蛋薄饼
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '面粉' THEN 0.2
+    WHEN '鸡蛋' THEN 0.08
+    WHEN '花生' THEN 0.05
+    WHEN '糖' THEN 0.05
+  END,
+  CASE i.name_zh
+    WHEN '面粉' THEN 'kg'
+    WHEN '鸡蛋' THEN 'tray'
+    WHEN '花生' THEN 'pack'
+    WHEN '糖' THEN 'kg'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '鸡蛋薄饼'
+  AND i.name_zh IN ('面粉', '鸡蛋', '花生', '糖')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- 印度煎饼Thosai
+INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, notes)
+SELECT r.id, i.id,
+  CASE i.name_zh
+    WHEN '米粉' THEN 0.3
+    WHEN '豆类' THEN 0.15
+    WHEN '咖喱' THEN 0.1
+  END,
+  CASE i.name_zh
+    WHEN '米粉' THEN 'kg'
+    WHEN '豆类' THEN 'kg'
+    WHEN '咖喱' THEN 'jar'
+  END, ''
+FROM recipes r, ingredients i
+WHERE r.name_zh = '印度煎饼Thosai'
+  AND i.name_zh IN ('米粉', '豆类', '咖喱')
+ON CONFLICT (recipe_id, ingredient_id) DO NOTHING;
+
+-- ========== 完成！所有130道菜的食材关联已配置 ==========
+-- 总计：90道(原有) + 30道(第一次新增) + 10道(早餐补充) = 130道菜品
 
