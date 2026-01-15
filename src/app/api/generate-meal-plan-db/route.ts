@@ -184,7 +184,7 @@ export async function POST(request: NextRequest) {
           if (ingredientMap.has(ingredientId)) {
             const existing = ingredientMap.get(ingredientId);
             existing.quantity += quantity;
-            existing.estimated_price = ingredient.avg_price_rm * existing.quantity;
+            existing.estimated_price = ingredient.avg_price_per_unit * existing.quantity;
           } else {
             ingredientMap.set(ingredientId, {
               ingredient_id: ingredientId,
@@ -194,8 +194,7 @@ export async function POST(request: NextRequest) {
               category: ingredient.category,
               quantity: quantity,
               unit: ri.unit || ingredient.unit,
-              estimated_price: ingredient.avg_price_rm * quantity,
-              is_optional: ri.is_optional,
+              estimated_price: ingredient.avg_price_per_unit * quantity,
               allergens: ingredient.allergens || [],
             });
           }
