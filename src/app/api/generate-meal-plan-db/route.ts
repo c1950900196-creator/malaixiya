@@ -7,12 +7,16 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.
 /**
  * 从数据库生成膳食计划 API (不使用豆包AI)
  * 直接从数据库智能选择菜品，带随机性和多样性
+ * 
+ * 🆕 v2.0 - 修复肉骨茶重复问题，每道菜一周最多2次
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { userProfile, restrictions, days = 7, peopleCount = 2, weeklyBudget } = body;
 
+    // 🚀 版本标识 - 用于确认代码是否已部署
+    console.log('🚀 === 膳食计划 API v2.1 (2026-01-15 修复版) ===');
     console.log('📦 生成膳食计划请求:', { days, peopleCount, restrictions, weeklyBudget });
 
     if (!supabaseUrl || !supabaseServiceKey) {
@@ -214,6 +218,10 @@ export async function POST(request: NextRequest) {
     for (let i = 0; i < days; i++) {
       const day = dayNames[i % 7];
       
+      console.log(`\n📅 === 生成第 ${i + 1} 天 (${day}) 的膳食 ===`);
+      console.log(`   早餐黑名单: ${Array.from(globalBreakfastBlacklist).join(', ') || '无'}`);
+      console.log(`   最近早餐: ${recentBreakfastIds.join(', ') || '无'}`);
+      
       // 🔒 严格限制：一道菜最多2次，用完就从候选中永久移除，且避免连续3餐重复
       const breakfast = selectRecipe(
         shuffledBreakfasts, 
@@ -222,6 +230,10 @@ export async function POST(request: NextRequest) {
         recentBreakfastIds,  // 🆕 传入最近使用的ID
         2
       );
+      
+      if (breakfast) {
+        console.log(`   ✅ 选中早餐: ${breakfast.name_zh} (ID: ${breakfast.id}, 当前使用: ${breakfastUsage.get(breakfast.id) || 0}次)`);
+      }
       const lunch = selectRecipe(
         shuffledLunches, 
         lunchUsage, 
