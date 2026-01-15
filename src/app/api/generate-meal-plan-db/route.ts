@@ -100,11 +100,12 @@ export async function POST(request: NextRequest) {
       return shuffled;
     };
 
-    // 🔒 严格限制：一道菜最多出现2次，绝对不能超过！
+    // 🔒 改进的选择算法：一道菜最多出现2次 + 避免连续重复
     const selectRecipe = (
       availableRecipes: any[],
       usedRecipes: Map<number, number>,
       globalUsedRecipes: Set<number>,  // 全局已用完的菜品（出现过2次的）
+      recentRecipeIds: number[],  // 最近N餐使用的菜品ID
       maxUsePerWeek: number = 2
     ): any | null => {
       if (availableRecipes.length === 0) {
@@ -112,29 +113,45 @@ export async function POST(request: NextRequest) {
         return null;
       }
 
-      // 🚫 过滤出可用的菜品：1) 未达到使用上限 AND 2) 不在全局黑名单中
+      // 🚫 过滤出可用的菜品：
+      // 1) 未达到使用上限 
+      // 2) 不在全局黑名单中
+      // 3) 不在最近3餐中（避免连续重复）
       const selectableRecipes = availableRecipes.filter(recipe => {
         const useCount = usedRecipes.get(recipe.id) || 0;
         const isBlacklisted = globalUsedRecipes.has(recipe.id);
-        return useCount < maxUsePerWeek && !isBlacklisted;
+        const recentlyUsed = recentRecipeIds.includes(recipe.id);
+        return useCount < maxUsePerWeek && !isBlacklisted && !recentlyUsed;
       });
 
-      if (selectableRecipes.length === 0) {
-        // ⚠️ 如果所有菜品都达到上限，返回 null（不再重置！）
+      // 备选方案1：如果没有符合的，只检查周上限（放宽最近3餐限制）
+      let finalCandidates = selectableRecipes;
+      if (finalCandidates.length === 0) {
+        console.warn('⚠️ 无符合条件的菜品，放宽"最近3餐"限制');
+        finalCandidates = availableRecipes.filter(recipe => {
+          const useCount = usedRecipes.get(recipe.id) || 0;
+          const isBlacklisted = globalUsedRecipes.has(recipe.id);
+          return useCount < maxUsePerWeek && !isBlacklisted;
+        });
+      }
+
+      // 备选方案2：如果还是没有，返回 null
+      if (finalCandidates.length === 0) {
         console.warn('⚠️ 所有可用菜品都已达到2次上限，无法继续选择');
         return null;
       }
 
       // 优先选择使用次数最少的菜品
       const minUseCount = Math.min(
-        ...selectableRecipes.map(r => usedRecipes.get(r.id) || 0)
+        ...finalCandidates.map(r => usedRecipes.get(r.id) || 0)
       );
-      const leastUsedRecipes = selectableRecipes.filter(
+      const leastUsedRecipes = finalCandidates.filter(
         r => (usedRecipes.get(r.id) || 0) === minUseCount
       );
 
-      // 从使用次数最少的菜品中随机选择
-      const selected = leastUsedRecipes[Math.floor(Math.random() * leastUsedRecipes.length)];
+      // 🎲 从使用次数最少的菜品中随机选择（增加多样性）
+      const randomPool = leastUsedRecipes.slice(0, Math.min(5, leastUsedRecipes.length));
+      const selected = randomPool[Math.floor(Math.random() * randomPool.length)];
       
       // 更新使用计数
       const newCount = (usedRecipes.get(selected.id) || 0) + 1;
@@ -168,13 +185,57 @@ export async function POST(request: NextRequest) {
     const globalLunchBlacklist = new Set<number>();
     const globalDinnerBlacklist = new Set<number>();
 
+    // 🆕 追踪最近3餐的菜品ID（避免连续重复）
+    const recentBreakfastIds: number[] = [];
+    const recentLunchIds: number[] = [];
+    const recentDinnerIds: number[] = [];
+    const RECENT_MEALS_WINDOW = 3; // 检查最近3餐
+
     for (let i = 0; i < days; i++) {
       const day = dayNames[i % 7];
       
-      // 🔒 严格限制：一道菜最多2次，用完就从候选中永久移除
-      const breakfast = selectRecipe(shuffledBreakfasts, breakfastUsage, globalBreakfastBlacklist, 2);
-      const lunch = selectRecipe(shuffledLunches, lunchUsage, globalLunchBlacklist, 2);
-      const dinner = selectRecipe(shuffledDinners, dinnerUsage, globalDinnerBlacklist, 2);
+      // 🔒 严格限制：一道菜最多2次，用完就从候选中永久移除，且避免连续3餐重复
+      const breakfast = selectRecipe(
+        shuffledBreakfasts, 
+        breakfastUsage, 
+        globalBreakfastBlacklist, 
+        recentBreakfastIds,  // 🆕 传入最近使用的ID
+        2
+      );
+      const lunch = selectRecipe(
+        shuffledLunches, 
+        lunchUsage, 
+        globalLunchBlacklist, 
+        recentLunchIds,  // 🆕 传入最近使用的ID
+        2
+      );
+      const dinner = selectRecipe(
+        shuffledDinners, 
+        dinnerUsage, 
+        globalDinnerBlacklist, 
+        recentDinnerIds,  // 🆕 传入最近使用的ID
+        2
+      );
+
+      // 🆕 更新最近使用记录
+      if (breakfast) {
+        recentBreakfastIds.push(breakfast.id);
+        if (recentBreakfastIds.length > RECENT_MEALS_WINDOW) {
+          recentBreakfastIds.shift(); // 移除最旧的
+        }
+      }
+      if (lunch) {
+        recentLunchIds.push(lunch.id);
+        if (recentLunchIds.length > RECENT_MEALS_WINDOW) {
+          recentLunchIds.shift();
+        }
+      }
+      if (dinner) {
+        recentDinnerIds.push(dinner.id);
+        if (recentDinnerIds.length > RECENT_MEALS_WINDOW) {
+          recentDinnerIds.shift();
+        }
+      }
 
       // 如果某餐没有可用菜品，使用后备方案或跳过
       if (!breakfast) {
