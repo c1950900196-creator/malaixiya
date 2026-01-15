@@ -100,31 +100,29 @@ export async function POST(request: NextRequest) {
       return shuffled;
     };
 
-    // 智能选择菜品函数：确保同一道菜一周最多出现2次
+    // 🔒 严格限制：一道菜最多出现2次，绝对不能超过！
     const selectRecipe = (
       availableRecipes: any[],
       usedRecipes: Map<number, number>,
+      globalUsedRecipes: Set<number>,  // 全局已用完的菜品（出现过2次的）
       maxUsePerWeek: number = 2
-    ): any => {
+    ): any | null => {
       if (availableRecipes.length === 0) {
-        throw new Error('没有可用的菜品');
+        console.error('❌ 没有可用的菜品');
+        return null;
       }
 
-      // 过滤出可用的菜品（未达到使用上限）
-      const selectableRecipes = availableRecipes.filter(
-        recipe => (usedRecipes.get(recipe.id) || 0) < maxUsePerWeek
-      );
+      // 🚫 过滤出可用的菜品：1) 未达到使用上限 AND 2) 不在全局黑名单中
+      const selectableRecipes = availableRecipes.filter(recipe => {
+        const useCount = usedRecipes.get(recipe.id) || 0;
+        const isBlacklisted = globalUsedRecipes.has(recipe.id);
+        return useCount < maxUsePerWeek && !isBlacklisted;
+      });
 
       if (selectableRecipes.length === 0) {
-        // 如果所有菜品都达到上限，重置计数器并重新随机打乱
-        console.warn('⚠️ 所有菜品都达到使用上限，重置计数器并重新打乱');
-        usedRecipes.clear();
-        
-        // 重新打乱菜品，避免按原顺序重复
-        const reshuffled = shuffle(availableRecipes);
-        const selected = reshuffled[0];
-        usedRecipes.set(selected.id, 1);
-        return selected;
+        // ⚠️ 如果所有菜品都达到上限，返回 null（不再重置！）
+        console.warn('⚠️ 所有可用菜品都已达到2次上限，无法继续选择');
+        return null;
       }
 
       // 优先选择使用次数最少的菜品
@@ -139,7 +137,14 @@ export async function POST(request: NextRequest) {
       const selected = leastUsedRecipes[Math.floor(Math.random() * leastUsedRecipes.length)];
       
       // 更新使用计数
-      usedRecipes.set(selected.id, (usedRecipes.get(selected.id) || 0) + 1);
+      const newCount = (usedRecipes.get(selected.id) || 0) + 1;
+      usedRecipes.set(selected.id, newCount);
+      
+      // 🔒 如果达到2次上限，加入全局黑名单
+      if (newCount >= maxUsePerWeek) {
+        globalUsedRecipes.add(selected.id);
+        console.log(`🔒 菜品 "${selected.name_zh}" 已达到${maxUsePerWeek}次上限，加入黑名单`);
+      }
       
       return selected;
     };
@@ -158,13 +163,29 @@ export async function POST(request: NextRequest) {
     const lunchUsage = new Map<number, number>();
     const dinnerUsage = new Map<number, number>();
 
+    // 🔒 全局黑名单：已经出现2次的菜品ID集合（绝对不能再选）
+    const globalBreakfastBlacklist = new Set<number>();
+    const globalLunchBlacklist = new Set<number>();
+    const globalDinnerBlacklist = new Set<number>();
+
     for (let i = 0; i < days; i++) {
       const day = dayNames[i % 7];
       
-      // 智能选择菜品，确保不超过2次
-      const breakfast = selectRecipe(shuffledBreakfasts, breakfastUsage, 2);
-      const lunch = selectRecipe(shuffledLunches, lunchUsage, 2);
-      const dinner = selectRecipe(shuffledDinners, dinnerUsage, 2);
+      // 🔒 严格限制：一道菜最多2次，用完就从候选中永久移除
+      const breakfast = selectRecipe(shuffledBreakfasts, breakfastUsage, globalBreakfastBlacklist, 2);
+      const lunch = selectRecipe(shuffledLunches, lunchUsage, globalLunchBlacklist, 2);
+      const dinner = selectRecipe(shuffledDinners, dinnerUsage, globalDinnerBlacklist, 2);
+
+      // 如果某餐没有可用菜品，使用后备方案或跳过
+      if (!breakfast) {
+        console.warn(`⚠️ Day ${i + 1} 早餐：所有菜品已用完，使用后备方案`);
+      }
+      if (!lunch) {
+        console.warn(`⚠️ Day ${i + 1} 午餐：所有菜品已用完，使用后备方案`);
+      }
+      if (!dinner) {
+        console.warn(`⚠️ Day ${i + 1} 晚餐：所有菜品已用完，使用后备方案`);
+      }
 
       mealPlan.push({
         day,
