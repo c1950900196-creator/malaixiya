@@ -143,7 +143,7 @@ INSERT INTO ingredients (name_zh, name_en, name_ms, category, unit, avg_price_pe
 ('香蕉', 'Banana', 'Pisang', 'fruit', 'kg', 4.00),
 ('芒果', 'Mango', 'Mangga', 'fruit', 'kg', 6.00),
 ('木瓜', 'Papaya', 'Betik', 'fruit', 'kg', 3.00),
-('菠萝', 'Pineapple', 'Nanas', 'pcs', 4.00),
+('菠萝', 'Pineapple', 'Nanas', 'fruit', 'pcs', 4.00),
 ('西瓜', 'Watermelon', 'Tembikai', 'kg', 2.00),
 ('榴莲', 'Durian', 'Durian', 'kg', 25.00),
 ('山竹', 'Mangosteen', 'Manggis', 'kg', 15.00),
