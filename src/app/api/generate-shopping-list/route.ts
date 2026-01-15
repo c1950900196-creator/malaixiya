@@ -1,3 +1,13 @@
+/**
+ * ⚠️ DEPRECATED: 此文件已废弃
+ * 
+ * 旧版本使用豆包 AI 生成购物清单，已弃用。
+ * 新版本在生成膳食计划时同时从数据库查询食材，请使用：
+ * /api/generate-meal-plan-db
+ * 
+ * 保留此文件仅供参考，未来版本将删除。
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
 
 // Vercel 配置：延长函数执行时间
