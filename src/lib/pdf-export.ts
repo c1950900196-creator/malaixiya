@@ -70,13 +70,12 @@ export function exportMealPlanToPDF(
   doc.save(`meal-plan-${new Date().toISOString().split('T')[0]}.pdf`);
 }
 
-// 获取食材显示名称的辅助函数
+// 获取食材显示名称的辅助函数 (PDF 使用英文名，避免中文乱码)
 function getIngredientName(item: ShoppingListItem & { ingredient?: Ingredient }): string {
-  // 优先使用 notes 字段（AI 生成的食材名），否则用 ingredient 关联的食材
-  return item.notes?.split('|')[0]?.trim() || 
-         item.ingredient?.name_zh || 
+  // PDF 不支持中文，优先使用英文名称
+  return item.ingredient?.name_en || 
          item.ingredient?.name_ms || 
-         item.ingredient?.name_en || 
+         item.notes?.split('|')[0]?.trim() || 
          'Unknown';
 }
 
