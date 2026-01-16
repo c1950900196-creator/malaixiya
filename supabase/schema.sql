@@ -238,3 +238,5 @@ CREATE TRIGGER update_shopping_lists_updated_at BEFORE UPDATE ON shopping_lists
 
 
 
+
+

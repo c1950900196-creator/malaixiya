@@ -187,3 +187,5 @@ export async function generateShoppingListFromDatabase(mealPlan: any[], peopleCo
   return shoppingList;
 }
 
+
+

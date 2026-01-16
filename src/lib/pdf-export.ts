@@ -70,6 +70,16 @@ export function exportMealPlanToPDF(
   doc.save(`meal-plan-${new Date().toISOString().split('T')[0]}.pdf`);
 }
 
+// 获取食材显示名称的辅助函数
+function getIngredientName(item: ShoppingListItem & { ingredient?: Ingredient }): string {
+  // 优先使用 notes 字段（AI 生成的食材名），否则用 ingredient 关联的食材
+  return item.notes?.split('|')[0]?.trim() || 
+         item.ingredient?.name_zh || 
+         item.ingredient?.name_ms || 
+         item.ingredient?.name_en || 
+         'Unknown';
+}
+
 // 导出购物清单为 PDF
 export function exportShoppingListToPDF(
   items: (ShoppingListItem & { ingredient?: Ingredient })[],
@@ -112,10 +122,10 @@ export function exportShoppingListToPDF(
     // 该类别的食材表格
     const categoryItems = groupedItems[category];
     const tableData = categoryItems.map((item) => [
-      item.ingredient?.name_en || 'Unknown',
+      getIngredientName(item),
       `${item.quantity} ${item.unit}`,
       `RM ${(item.estimated_price || 0).toFixed(2)}`,
-      '☐', // Checkbox
+      '&', // Checkbox (using & as placeholder since PDF doesn't support checkbox unicode well)
     ]);
     
     autoTable(doc, {
@@ -147,6 +157,8 @@ function getMealTypeLabel(type: string): string {
   };
   return labels[type] || type;
 }
+
+
 
 
 
