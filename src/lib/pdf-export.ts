@@ -72,10 +72,19 @@ export function exportMealPlanToPDF(
 
 // 获取食材显示名称的辅助函数 (PDF 使用英文名，避免中文乱码)
 function getIngredientName(item: ShoppingListItem & { ingredient?: Ingredient }): string {
-  // PDF 不支持中文，优先使用英文名称
+  // notes 字段格式: "中文名 | English | Bahasa Malaysia"
+  // PDF 不支持中文，使用第二部分（英文名）
+  if (item.notes) {
+    const parts = item.notes.split('|');
+    const englishName = parts[1]?.trim();  // 第二部分是英文名
+    const malayName = parts[2]?.trim();    // 第三部分是马来文名
+    if (englishName) return englishName;
+    if (malayName) return malayName;
+  }
+  
+  // 回退到 ingredient 关联数据
   return item.ingredient?.name_en || 
          item.ingredient?.name_ms || 
-         item.notes?.split('|')[0]?.trim() || 
          'Unknown';
 }
 
