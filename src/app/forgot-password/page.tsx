@@ -29,10 +29,10 @@ export default function ForgotPasswordPage() {
 
       if (error) throw error;
 
-      setSuccess('重置密码的链接已发送到您的邮箱，请查收！');
+      setSuccess('Password reset link has been sent to your email!');
     } catch (err: any) {
       console.error('Password reset error:', err);
-      setError(err.message || '发送重置链接失败，请稍后再试');
+      setError(err.message || 'Failed to send reset link, please try again later');
     } finally {
       setIsLoading(false);
     }
@@ -46,7 +46,7 @@ export default function ForgotPasswordPage() {
           className="inline-flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400 hover:text-primary mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          返回登录
+          Back to Login
         </Link>
 
         <Card className="shadow-xl">
@@ -54,9 +54,9 @@ export default function ForgotPasswordPage() {
             <div className="mb-4 text-center">
               <span className="text-5xl">🔐</span>
             </div>
-            <CardTitle className="text-2xl">忘记密码</CardTitle>
+            <CardTitle className="text-2xl">Forgot Password</CardTitle>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
-              输入您的邮箱，我们将发送重置密码的链接
+              Enter your email and we'll send you a reset link
             </p>
           </CardHeader>
 
@@ -75,7 +75,7 @@ export default function ForgotPasswordPage() {
               )}
 
               <Input
-                label="邮箱"
+                label="Email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -91,7 +91,7 @@ export default function ForgotPasswordPage() {
                 isLoading={isLoading}
                 disabled={isLoading || !!success}
               >
-                {success ? '已发送' : '发送重置链接'}
+                {success ? 'Sent!' : 'Send Reset Link'}
               </Button>
             </form>
 
@@ -100,7 +100,7 @@ export default function ForgotPasswordPage() {
                 href="/login"
                 className="text-zinc-500 dark:text-zinc-400 hover:text-primary transition-colors"
               >
-                返回登录
+                Back to Login
               </Link>
             </div>
           </CardContent>
@@ -109,8 +109,3 @@ export default function ForgotPasswordPage() {
     </div>
   );
 }
-
-
-
-
-

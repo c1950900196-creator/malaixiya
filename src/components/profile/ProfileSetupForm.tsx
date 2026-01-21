@@ -15,7 +15,7 @@ import { HealthGoal, RestrictionType } from '@/types/database.types';
 import { createBrowserClient } from '@/lib/supabase';
 
 const profileSchema = z.object({
-  full_name: z.string().min(2, '姓名至少2个字符'),
+  full_name: z.string().min(2, 'Name must be at least 2 characters'),
   age: z.number().min(1).max(120),
   gender: z.enum(['male', 'female', 'other']),
   weight: z.number().min(20).max(300),
@@ -52,7 +52,7 @@ export const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ onSubmit, in
     },
   });
   
-  // 自动加载已登录用户的姓名
+  // Auto-load logged-in user's name
   useEffect(() => {
     const loadUserInfo = async () => {
       try {
@@ -60,13 +60,13 @@ export const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ onSubmit, in
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
-          // 优先使用用户元数据中的姓名
+          // Prefer name from user metadata
           const fullName = user.user_metadata?.full_name || '';
           if (fullName) {
             setValue('full_name', fullName);
           }
           
-          // 尝试从 user_profiles 表加载更多信息（使用 maybeSingle 避免 406 错误）
+          // Try to load more info from user_profiles table
           const { data: profile } = await supabase
             .from('user_profiles')
             .select('*')
@@ -98,20 +98,20 @@ export const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ onSubmit, in
   const selectedGoal = watch('health_goal');
   
   const goalOptions: { value: HealthGoal; label: string; description: string; icon: string }[] = [
-    { value: 'lose_weight', label: '减重', description: '减少脂肪，瘦身健康', icon: '📉' },
-    { value: 'gain_muscle', label: '增肌', description: '增加肌肉，力量训练', icon: '💪' },
-    { value: 'maintain', label: '保持体重', description: '均衡饮食，维持状态', icon: '⚖️' },
+    { value: 'lose_weight', label: 'Lose Weight', description: 'Reduce fat, get healthier', icon: '📉' },
+    { value: 'gain_muscle', label: 'Build Muscle', description: 'Gain muscle, strength training', icon: '💪' },
+    { value: 'maintain', label: 'Maintain Weight', description: 'Balanced diet, stay fit', icon: '⚖️' },
   ];
   
   const restrictionOptions: { type: RestrictionType; label: string; icon: string }[] = [
-    { type: 'halal', label: '清真 (Halal)', icon: '🕌' },
-    { type: 'vegetarian', label: '素食 (Vegetarian)', icon: '🥬' },
-    { type: 'vegan', label: '纯素 (Vegan)', icon: '🌱' },
-    { type: 'diabetes', label: '糖尿病友好', icon: '💉' },
-    { type: 'gluten_free', label: '无麸质', icon: '🌾' },
-    { type: 'dairy_free', label: '无乳制品', icon: '🥛' },
-    { type: 'nut_allergy', label: '坚果过敏', icon: '🥜' },
-    { type: 'seafood_allergy', label: '海鲜过敏', icon: '🦐' },
+    { type: 'halal', label: 'Halal', icon: '🕌' },
+    { type: 'vegetarian', label: 'Vegetarian', icon: '🥬' },
+    { type: 'vegan', label: 'Vegan', icon: '🌱' },
+    { type: 'diabetes', label: 'Diabetes Friendly', icon: '💉' },
+    { type: 'gluten_free', label: 'Gluten Free', icon: '🌾' },
+    { type: 'dairy_free', label: 'Dairy Free', icon: '🥛' },
+    { type: 'nut_allergy', label: 'Nut Allergy', icon: '🥜' },
+    { type: 'seafood_allergy', label: 'Seafood Allergy', icon: '🦐' },
   ];
   
   const toggleRestriction = (type: RestrictionType) => {
@@ -138,7 +138,7 @@ export const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ onSubmit, in
               <div className="bg-primary/10 p-2 rounded-lg text-primary">
                 <Target className="w-5 h-5" />
               </div>
-              <CardTitle>健康目标</CardTitle>
+              <CardTitle>Health Goal</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
@@ -186,19 +186,19 @@ export const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ onSubmit, in
         
         <Card>
           <CardHeader>
-            <CardTitle>基本信息</CardTitle>
+            <CardTitle>Basic Information</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="姓名"
+                label="Full Name"
                 {...register('full_name')}
                 error={errors.full_name?.message}
-                placeholder="请输入您的姓名"
+                placeholder="Enter your name"
               />
               
               <Input
-                label="年龄"
+                label="Age"
                 type="number"
                 {...register('age', { valueAsNumber: true })}
                 error={errors.age?.message}
@@ -206,18 +206,18 @@ export const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ onSubmit, in
               />
               
               <Select
-                label="性别"
+                label="Gender"
                 {...register('gender')}
                 error={errors.gender?.message}
                 options={[
-                  { value: 'male', label: '男' },
-                  { value: 'female', label: '女' },
-                  { value: 'other', label: '其他' },
+                  { value: 'male', label: 'Male' },
+                  { value: 'female', label: 'Female' },
+                  { value: 'other', label: 'Other' },
                 ]}
               />
               
               <Input
-                label="体重 (kg)"
+                label="Weight (kg)"
                 type="number"
                 step="0.1"
                 {...register('weight', { valueAsNumber: true })}
@@ -226,7 +226,7 @@ export const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ onSubmit, in
               />
               
               <Input
-                label="身高 (cm)"
+                label="Height (cm)"
                 type="number"
                 {...register('height', { valueAsNumber: true })}
                 error={errors.height?.message}
@@ -234,15 +234,15 @@ export const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ onSubmit, in
               />
               
               <Select
-                label="活动水平"
+                label="Activity Level"
                 {...register('activity_level')}
                 error={errors.activity_level?.message}
                 options={[
-                  { value: 'sedentary', label: '久坐不动' },
-                  { value: 'lightly_active', label: '轻度活动' },
-                  { value: 'moderately_active', label: '中度活动' },
-                  { value: 'very_active', label: '高度活动' },
-                  { value: 'extremely_active', label: '极高活动' },
+                  { value: 'sedentary', label: 'Sedentary' },
+                  { value: 'lightly_active', label: 'Lightly Active' },
+                  { value: 'moderately_active', label: 'Moderately Active' },
+                  { value: 'very_active', label: 'Very Active' },
+                  { value: 'extremely_active', label: 'Extremely Active' },
                 ]}
               />
             </div>
@@ -251,7 +251,7 @@ export const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ onSubmit, in
         
         <Card>
           <CardHeader>
-            <CardTitle>饮食限制与偏好</CardTitle>
+            <CardTitle>Dietary Restrictions & Preferences</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-3">
@@ -283,12 +283,12 @@ export const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ onSubmit, in
               <div className="bg-primary/10 p-2 rounded-lg text-primary">
                 <Wallet className="w-5 h-5" />
               </div>
-              <CardTitle>每周预算</CardTitle>
+              <CardTitle>Weekly Budget</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <div className="flex justify-between items-end mb-4">
-              <span className="text-sm text-zinc-500 dark:text-zinc-400">预算金额 (MYR)</span>
+              <span className="text-sm text-zinc-500 dark:text-zinc-400">Budget (MYR)</span>
               <span className="text-3xl font-bold text-primary">RM {budget}</span>
             </div>
             <div className="relative w-full h-2 bg-zinc-200 dark:bg-zinc-800 rounded-lg mb-8">
@@ -319,9 +319,9 @@ export const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ onSubmit, in
         
         <Card variant="elevated" className="bg-zinc-900 dark:bg-zinc-900 text-white border-zinc-800">
           <CardContent className="p-6">
-            <h3 className="text-lg font-bold mb-4">准备好了吗？</h3>
+            <h3 className="text-lg font-bold mb-4">Ready to Start?</h3>
             <p className="text-zinc-300 text-sm mb-6">
-              点击下方按钮，AI 将根据您的偏好立即生成包含 Nasi Lemak, Laksa 等本地美食的个性化计划。
+              Click the button below, and AI will generate a personalized plan with local Malaysian delights like Nasi Lemak, Laksa, and more.
             </p>
             <Button
               type="submit"
@@ -330,7 +330,7 @@ export const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ onSubmit, in
               size="lg"
               isLoading={isSubmitting}
             >
-              生成膳食计划
+              Generate Meal Plan
             </Button>
           </CardContent>
         </Card>
@@ -338,4 +338,3 @@ export const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ onSubmit, in
     </form>
   );
 };
-

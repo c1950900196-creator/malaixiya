@@ -13,7 +13,7 @@ export default function ShoppingListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentMealPlanId, setCurrentMealPlanId] = useState<string | null>(null);
   
-  // 使用缓存 store
+  // Use cache store
   const { 
     setCache, 
     getCache, 
@@ -31,7 +31,7 @@ export default function ShoppingListPage() {
         return;
       }
       
-      // 获取最新的膳食计划
+      // Get latest meal plan
       const { data: mealPlans } = await supabase
         .from('meal_plans')
         .select('id, created_at')
@@ -50,20 +50,20 @@ export default function ShoppingListPage() {
       const mealPlan = mealPlans[0];
       setCurrentMealPlanId(mealPlan.id);
       
-      // 检查缓存是否有效（非强制刷新时）
+      // Check if cache is valid (not force refresh)
       if (!forceRefresh && isCacheValid(mealPlan.id)) {
         const cachedItems = getCache(mealPlan.id);
         if (cachedItems && cachedItems.length > 0) {
-          console.log('✅ 使用缓存的购物清单');
+          console.log('✅ Using cached shopping list');
           setItems(cachedItems);
           setIsLoading(false);
           return;
         }
       }
       
-      console.log('🔄 从数据库加载购物清单...');
+      console.log('🔄 Loading shopping list from database...');
       
-      // 获取最新的购物清单
+      // Get latest shopping list
       const { data: lists, error: listError } = await supabase
         .from('shopping_lists')
         .select('id, created_at')
@@ -78,7 +78,7 @@ export default function ShoppingListPage() {
         return;
       }
       
-      // 如果没有购物清单记录
+      // If no shopping list records
       if (!lists || lists.length === 0) {
         console.log('No shopping lists found');
         setItems([]);
@@ -88,7 +88,7 @@ export default function ShoppingListPage() {
       
       const list = lists[0];
       
-      // 获取购物清单项目
+      // Get shopping list items
       const { data: itemsData, error: itemsError } = await supabase
         .from('shopping_list_items')
         .select(`
@@ -102,9 +102,9 @@ export default function ShoppingListPage() {
       const loadedItems = itemsData || [];
       setItems(loadedItems);
       
-      // 更新缓存
+      // Update cache
       setCache(mealPlan.id, loadedItems);
-      console.log('✅ 购物清单已缓存');
+      console.log('✅ Shopping list cached');
       
       setIsLoading(false);
     } catch (error) {
@@ -129,12 +129,12 @@ export default function ShoppingListPage() {
       
       if (error) throw error;
       
-      // 更新本地状态
+      // Update local state
       setItems(items.map(item =>
         item.id === itemId ? { ...item, is_purchased: isPurchased } : item
       ));
       
-      // 同步更新缓存
+      // Sync update cache
       updateCacheItem(itemId, { is_purchased: isPurchased });
     } catch (error) {
       console.error('Error updating item:', error);
@@ -143,7 +143,7 @@ export default function ShoppingListPage() {
   
   const handleRefresh = () => {
     setIsLoading(true);
-    loadShoppingList(true); // 强制刷新
+    loadShoppingList(true); // Force refresh
   };
   
   const handleExportPDF = () => {
@@ -157,7 +157,7 @@ export default function ShoppingListPage() {
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-            <p className="text-gray-500 dark:text-gray-400">加载购物清单...</p>
+            <p className="text-gray-500 dark:text-gray-400">Loading shopping list...</p>
           </div>
         </div>
       </MainLayout>

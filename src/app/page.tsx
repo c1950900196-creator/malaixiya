@@ -9,12 +9,12 @@ import { createBrowserClient } from '@/lib/supabase';
 import { useUserStore } from '@/store/userStore';
 import { useMealPlanStore } from '@/store/mealPlanStore';
 
-// 保存购物清单（从数据库返回的结果）
+// Save shopping list (from database results)
 async function saveShoppingListFromAI(userId: string, mealPlanId: string, shoppingListItems: any[], supabase: any) {
   try {
     console.log('🛒 Saving shopping list...');
 
-    // 创建购物清单记录
+    // Create shopping list record
     const { data: shoppingList, error: listError } = await supabase
       .from('shopping_lists')
       .insert({
@@ -32,13 +32,13 @@ async function saveShoppingListFromAI(userId: string, mealPlanId: string, shoppi
 
     console.log('✅ Shopping list created:', shoppingList.id);
 
-    // 保存购物清单项目
+    // Save shopping list items
     if (shoppingListItems && shoppingListItems.length > 0) {
       console.log('📦 Processing', shoppingListItems.length, 'shopping items');
       
       const items = shoppingListItems.map((item: any) => {
-        // 适配数据库格式
-        const name = item.name || item.name_zh || '未知';
+        // Adapt to database format
+        const name = item.name || item.name_zh || 'Unknown';
         const nameEn = item.name_en || '';
         const nameMs = item.name_ms || '';
         const notesText = `${name} | ${nameEn} | ${nameMs}`;
@@ -48,7 +48,7 @@ async function saveShoppingListFromAI(userId: string, mealPlanId: string, shoppi
           ingredient_id: item.ingredient_id || null,
           quantity: item.quantity || 0,
           unit: item.unit || 'g',
-          category: item.category || '其他',
+          category: item.category || 'Other',
           estimated_price: item.estimated_price || item.price || 0,
           is_purchased: false,
           notes: notesText,
@@ -72,66 +72,66 @@ async function saveShoppingListFromAI(userId: string, mealPlanId: string, shoppi
   }
 }
 
-// 默认价格表（马来西亚令吉）
+// Default price table (Malaysian Ringgit)
 const DEFAULT_PRICES: Record<string, number> = {
-  // 肉类
-  '鸡肉': 12, '牛肉': 35, '羊肉': 40, '猪肉': 18, '鸭肉': 20,
-  '鸡腿': 10, '鸡胸': 12, '鸡翅': 8, '排骨': 25,
-  // 海鲜
-  '虾': 25, '鱼': 15, '蟹': 45, '鱿鱼': 18, '贝类': 20,
-  // 蔬菜
-  '白菜': 3, '菠菜': 4, '生菜': 3, '西兰花': 6, '胡萝卜': 2,
-  '洋葱': 3, '大蒜': 5, '姜': 4, '辣椒': 3, '番茄': 4,
-  '黄瓜': 3, '茄子': 4, '豆芽': 2, '空心菜': 3, '芥蓝': 5,
-  // 主食
-  '米饭': 8, '面条': 5, '米粉': 4, '面包': 6, '椰浆饭': 3,
-  // 调味料
-  '酱油': 6, '盐': 2, '糖': 4, '醋': 5, '咖喱粉': 8,
-  '椰浆': 5, '虾酱': 10, '参巴酱': 8, '花生酱': 12,
-  // 其他
-  '鸡蛋': 8, '豆腐': 4, '豆干': 5, '花生': 8, '椰子': 6,
+  // Meat
+  'chicken': 12, 'beef': 35, 'lamb': 40, 'pork': 18, 'duck': 20,
+  'chicken leg': 10, 'chicken breast': 12, 'chicken wing': 8, 'ribs': 25,
+  // Seafood
+  'shrimp': 25, 'fish': 15, 'crab': 45, 'squid': 18, 'shellfish': 20,
+  // Vegetables
+  'cabbage': 3, 'spinach': 4, 'lettuce': 3, 'broccoli': 6, 'carrot': 2,
+  'onion': 3, 'garlic': 5, 'ginger': 4, 'chili': 3, 'tomato': 4,
+  'cucumber': 3, 'eggplant': 4, 'bean sprouts': 2, 'kangkung': 3, 'kailan': 5,
+  // Staples
+  'rice': 8, 'noodles': 5, 'rice noodles': 4, 'bread': 6, 'nasi lemak': 3,
+  // Seasonings
+  'soy sauce': 6, 'salt': 2, 'sugar': 4, 'vinegar': 5, 'curry powder': 8,
+  'coconut milk': 5, 'belacan': 10, 'sambal': 8, 'peanut sauce': 12,
+  // Others
+  'egg': 8, 'tofu': 4, 'tempeh': 5, 'peanuts': 8, 'coconut': 6,
 };
 
-// 根据名称获取默认价格
+// Get default price by name
 function getDefaultPrice(name: string, category: string): number {
-  // 先尝试精确匹配
+  // Try exact match first
   for (const [key, price] of Object.entries(DEFAULT_PRICES)) {
-    if (name.includes(key)) return price;
+    if (name.toLowerCase().includes(key)) return price;
   }
-  // 按分类给默认价格
+  // Default price by category
   const categoryPrices: Record<string, number> = {
-    '肉类': 20, '海鲜': 25, '蔬菜': 4, '调味料': 6, '主食': 5,
-    '肉类 & 海鲜': 22, '新鲜蔬菜': 4, '谷物 & 主食': 5, '水果': 6,
-    '乳制品': 8, '菜品': 15, '小吃': 8, '主菜': 20, '其他': 5,
+    'Meat': 20, 'Seafood': 25, 'Vegetables': 4, 'Seasonings': 6, 'Staples': 5,
+    'Meat & Seafood': 22, 'Fresh Vegetables': 4, 'Grains & Staples': 5, 'Fruits': 6,
+    'Dairy': 8, 'Dishes': 15, 'Snacks': 8, 'Main Dishes': 20, 'Other': 5,
   };
   return categoryPrices[category] || 5;
 }
 
-// 预设购物清单模板（马来西亚常见食材）
+// Default shopping list template (common Malaysian ingredients)
 function getDefaultShoppingList(): any[] {
   return [
-    // 菜品（成品菜）
-    { name: '椰浆饭', category: '菜品', quantity: 2, unit: '份', price: 8 },
-    { name: '沙爹串', category: '小吃', quantity: 2, unit: '份', price: 12 },
-    { name: '肉骨茶', category: '主菜', quantity: 1, unit: '份', price: 25 },
-    { name: '马来炒面', category: '主菜', quantity: 1, unit: '份', price: 10 },
-    { name: '叻沙', category: '主菜', quantity: 1, unit: '份', price: 12 },
-    { name: '仁当鸡', category: '主菜', quantity: 1, unit: '份', price: 18 },
-    { name: '咖喱鸡', category: '主菜', quantity: 1, unit: '份', price: 15 },
-    // 蔬菜
-    { name: '空心菜', category: '新鲜蔬菜', quantity: 500, unit: 'g', price: 4 },
-    { name: '豆芽', category: '新鲜蔬菜', quantity: 300, unit: 'g', price: 3 },
-    { name: '黄瓜', category: '新鲜蔬菜', quantity: 2, unit: '根', price: 3 },
-    // 调味料
-    { name: '椰浆', category: '调味料', quantity: 2, unit: '罐', price: 8 },
-    { name: '参巴酱', category: '调味料', quantity: 1, unit: '瓶', price: 10 },
-    // 蛋白质
-    { name: '鸡蛋', category: '肉类 & 海鲜', quantity: 10, unit: '个', price: 8 },
-    { name: '虾', category: '肉类 & 海鲜', quantity: 500, unit: 'g', price: 25 },
+    // Dishes
+    { name: 'Nasi Lemak', category: 'Dishes', quantity: 2, unit: 'serving', price: 8 },
+    { name: 'Satay', category: 'Snacks', quantity: 2, unit: 'serving', price: 12 },
+    { name: 'Bak Kut Teh', category: 'Main Dishes', quantity: 1, unit: 'serving', price: 25 },
+    { name: 'Mee Goreng', category: 'Main Dishes', quantity: 1, unit: 'serving', price: 10 },
+    { name: 'Laksa', category: 'Main Dishes', quantity: 1, unit: 'serving', price: 12 },
+    { name: 'Rendang', category: 'Main Dishes', quantity: 1, unit: 'serving', price: 18 },
+    { name: 'Curry Chicken', category: 'Main Dishes', quantity: 1, unit: 'serving', price: 15 },
+    // Vegetables
+    { name: 'Kangkung', category: 'Fresh Vegetables', quantity: 500, unit: 'g', price: 4 },
+    { name: 'Bean Sprouts', category: 'Fresh Vegetables', quantity: 300, unit: 'g', price: 3 },
+    { name: 'Cucumber', category: 'Fresh Vegetables', quantity: 2, unit: 'pcs', price: 3 },
+    // Seasonings
+    { name: 'Coconut Milk', category: 'Seasonings', quantity: 2, unit: 'can', price: 8 },
+    { name: 'Sambal', category: 'Seasonings', quantity: 1, unit: 'jar', price: 10 },
+    // Protein
+    { name: 'Eggs', category: 'Meat & Seafood', quantity: 10, unit: 'pcs', price: 8 },
+    { name: 'Shrimp', category: 'Meat & Seafood', quantity: 500, unit: 'g', price: 25 },
   ];
 }
 
-// 合并、去重、汇总购物清单
+// Merge, deduplicate, and consolidate shopping list
 function mergeShoppingItems(items: any[]): any[] {
   const merged = new Map<string, any>();
   
@@ -140,29 +140,29 @@ function mergeShoppingItems(items: any[]): any[] {
     if (!name) continue;
     
     const key = name.toLowerCase().trim();
-    const category = item.category || '其他';
+    const category = item.category || 'Other';
     
-    // 如果没有价格，使用默认价格
+    // Use default price if none provided
     const price = parseFloat(item.price) || getDefaultPrice(name, category);
     
     if (merged.has(key)) {
-      // 已存在，累加数量
+      // Already exists, accumulate quantity
       const existing = merged.get(key);
       const existingQty = parseFloat(existing.quantity) || 0;
       const newQty = parseFloat(item.quantity) || 0;
       existing.quantity = existingQty + newQty;
-      // 取较高的价格
+      // Keep higher price
       if (price > existing.price) {
         existing.price = price;
       }
     } else {
-      // 新增
+      // Add new
       merged.set(key, {
         name: name,
         name_en: item.name_en || '',
         category: category,
         quantity: parseFloat(item.quantity) || 1,
-        unit: item.unit || '份',
+        unit: item.unit || 'serving',
         price: price,
       });
     }
@@ -182,7 +182,7 @@ export default function Home() {
   const [userName, setUserName] = useState('');
   const [isCheckingPlan, setIsCheckingPlan] = useState(true);
   
-  // 检查用户登录状态和是否已有膳食计划
+  // Check user login status and existing meal plan
   useEffect(() => {
     const checkUserAndPlan = async () => {
       try {
@@ -195,7 +195,7 @@ export default function Home() {
             setUserName(user.user_metadata?.full_name || user.email?.split('@')[0] || '');
           }
           
-          // 检查用户是否已有活跃的膳食计划
+          // Check if user has active meal plan
           const { data: mealPlans } = await supabase
             .from('meal_plans')
             .select('id, created_at')
@@ -204,9 +204,9 @@ export default function Home() {
             .order('created_at', { ascending: false })
             .limit(1);
           
-          // 如果有活跃的膳食计划，自动跳转到 dashboard
+          // If there's an active meal plan, redirect to dashboard
           if (mealPlans && mealPlans.length > 0) {
-            console.log('✅ 用户已有膳食计划，跳转到 dashboard');
+            console.log('✅ User has meal plan, redirecting to dashboard');
             router.push('/dashboard');
             return;
           }
@@ -224,49 +224,49 @@ export default function Home() {
   const handleSubmit = async (data: any) => {
     setIsLoading(true);
     setProgress(0);
-    setLoadingStep('正在创建用户会话...');
+    setLoadingStep('Creating user session...');
     
-    // 🔧 清除旧的缓存数据（重要！）
+    // 🔧 Clear old cached data (important!)
     console.log('🧹 Clearing old cached data...');
     setCurrentPlan(null);
     setPlanDetails([]);
     
     try {
-      // 检查是否配置了 Supabase
+      // Check if Supabase is configured
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || 
           process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-project')) {
-        alert('⚠️ 请先配置 Supabase\n\n1. 访问 https://app.supabase.com/ 创建项目\n2. 复制 API 密钥到 .env.local 文件\n3. 执行数据库脚本\n\n详细说明请查看：配置说明.md');
+        alert('⚠️ Please configure Supabase first\n\n1. Visit https://app.supabase.com/ to create a project\n2. Copy API keys to .env.local file\n3. Run database scripts\n\nSee: Configuration Guide');
         setIsLoading(false);
         return;
       }
       
       const supabase = createBrowserClient();
       
-      // 获取当前用户
+      // Get current user
       let { data: { user } } = await supabase.auth.getUser();
       
-      // 如果没有用户，创建匿名会话
+      // Create anonymous session if no user
       if (!user) {
         setProgress(10);
-        setLoadingStep('正在创建匿名用户会话...');
+        setLoadingStep('Creating anonymous user session...');
         console.log('Creating anonymous user session...');
         const { data: anonData, error: anonError } = await supabase.auth.signInAnonymously();
         
         if (anonError) {
           console.error('Failed to create anonymous session:', anonError);
-          throw new Error('无法创建用户会话，请检查 Supabase 配置');
+          throw new Error('Unable to create user session. Please check Supabase configuration.');
         }
         
         user = anonData.user;
       }
       
       if (!user) {
-        throw new Error('无法获取用户信息');
+        throw new Error('Unable to get user information');
       }
       
-      // 保存用户档案
+      // Save user profile
       setProgress(20);
-      setLoadingStep('正在保存您的个人资料...');
+      setLoadingStep('Saving your profile...');
       const { error: profileError } = await supabase
         .from('user_profiles')
         .upsert({
@@ -287,20 +287,20 @@ export default function Home() {
         throw profileError;
       }
       
-      // 保存饮食限制
+      // Save dietary restrictions
       if (data.restrictions && data.restrictions.length > 0) {
         const restrictions = data.restrictions.map((type: string) => ({
           user_id: user.id,
           restriction_type: type,
         }));
         
-        // 先删除旧的限制
+        // Delete old restrictions first
         await supabase
           .from('dietary_restrictions')
           .delete()
           .eq('user_id', user.id);
         
-        // 插入新的限制
+        // Insert new restrictions
         const { error: restrictionsError } = await supabase
           .from('dietary_restrictions')
           .insert(restrictions);
@@ -310,12 +310,12 @@ export default function Home() {
       
       setProfile({ id: user.id, ...data } as any);
       
-      // ==================== 生成膳食计划 v3.0 ====================
+      // ==================== Generate Meal Plan v3.0 ====================
       setProgress(40);
-      setLoadingStep('正在生成您的膳食计划 (21顿饭)...');
-      console.log('🚀 开始生成膳食计划 v3.0...');
+      setLoadingStep('Generating your meal plan (21 meals)...');
+      console.log('🚀 Starting meal plan generation v3.0...');
       
-      // 调用新的 API 生成膳食计划
+      // Call new API to generate meal plan
       const dbResponse = await fetch('/api/generate-meal-plan-db', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -338,30 +338,30 @@ export default function Home() {
       
       if (!dbResponse.ok) {
         const errorData = await dbResponse.json().catch(() => ({}));
-        console.error('❌ 膳食计划生成失败:', errorData);
-        throw new Error(errorData.error || '膳食计划生成失败');
+        console.error('❌ Meal plan generation failed:', errorData);
+        throw new Error(errorData.error || 'Meal plan generation failed');
       }
       
       const dbResult = await dbResponse.json();
-      console.log('✅ 膳食计划生成成功:', dbResult);
+      console.log('✅ Meal plan generated successfully:', dbResult);
       
-      // 打印统计信息
+      // Print statistics
       if (dbResult.summary) {
-        console.log(`📊 统计: ${dbResult.summary.unique_dishes} 道不同菜品, ${dbResult.summary.total_dishes} 餐`);
-        console.log(`🔥 热量: ${dbResult.summary.avg_daily_calories} kcal/天 (目标: ${dbResult.summary.target_daily_calories})`);
-        console.log(`💰 预算: RM${dbResult.summary.total_cost?.toFixed(2)} / RM${dbResult.summary.weekly_budget?.toFixed(2)}`);
+        console.log(`📊 Stats: ${dbResult.summary.unique_dishes} unique dishes, ${dbResult.summary.total_dishes} meals`);
+        console.log(`🔥 Calories: ${dbResult.summary.avg_daily_calories} kcal/day (target: ${dbResult.summary.target_daily_calories})`);
+        console.log(`💰 Budget: RM${dbResult.summary.total_cost?.toFixed(2)} / RM${dbResult.summary.weekly_budget?.toFixed(2)}`);
       }
       
-      // 打印调试日志
+      // Print debug logs
       if (dbResult.debug?.logs) {
-        console.log('📋 详细日志:');
+        console.log('📋 Detailed logs:');
         dbResult.debug.logs.forEach((log: string) => console.log(`   ${log}`));
       }
       
       setProgress(60);
-      setLoadingStep('正在保存膳食计划...');
+      setLoadingStep('Saving meal plan...');
       
-      // 获取本周一的日期
+      // Get this week's Monday date
       const today = new Date();
       const dayOfWeek = today.getDay();
       const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
@@ -374,7 +374,7 @@ export default function Home() {
       sunday.setDate(monday.getDate() + 6);
       const endDate = sunday.toISOString().split('T')[0];
       
-      // 转换 API 返回的数据为前端需要的格式
+      // Convert API response to frontend format
       const mealPlan: any[] = [];
       const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
       
@@ -408,18 +408,18 @@ export default function Home() {
         });
       });
       
-      console.log(`✅ 解析完成: ${mealPlan.length} 餐`);
+      console.log(`✅ Parsing complete: ${mealPlan.length} meals`);
       
       if (mealPlan.length === 0) {
-        throw new Error('膳食计划生成失败，请重试');
+        throw new Error('Meal plan generation failed, please try again');
       }
       
-      // 保存膳食计划
+      // Save meal plan
       const { data: planData, error: planError } = await supabase
         .from('meal_plans')
         .insert({
           user_id: user.id,
-          plan_name: `${data.full_name} 的膳食计划`,
+          plan_name: `${data.full_name}'s Meal Plan`,
           start_date: startDate,
           end_date: endDate,
           is_active: true,
@@ -432,9 +432,9 @@ export default function Home() {
         throw planError;
       }
       
-      // 保存膳食计划详情
+      // Save meal plan details
       const planDetails = mealPlan
-        .filter(meal => meal.recipe && meal.recipe.id) // 确保有有效的 recipe
+        .filter(meal => meal.recipe && meal.recipe.id) // Ensure valid recipe
         .map((meal) => {
           const detail = {
             meal_plan_id: planData.id,
@@ -444,10 +444,10 @@ export default function Home() {
             servings: 1,
           };
           
-          // 验证所有UUID字段
+          // Validate all UUID fields
           if (!detail.meal_plan_id || !detail.recipe_id) {
             console.error('❌ Invalid detail:', detail);
-            throw new Error('数据格式错误：缺少必需的ID字段');
+            throw new Error('Data format error: missing required ID fields');
           }
           
           return detail;
@@ -458,7 +458,7 @@ export default function Home() {
       const { data: insertedDetails, error: detailsError } = await supabase
         .from('meal_plan_details')
         .insert(planDetails)
-        .select();  // ✅ 添加 .select() 以获取插入后的数据（包含生成的 id）
+        .select();  // ✅ Add .select() to get inserted data (including generated id)
       
       if (detailsError) {
         console.error('❌ Meal plan details save error:', detailsError);
@@ -467,15 +467,15 @@ export default function Home() {
       }
       
       if (!insertedDetails || insertedDetails.length === 0) {
-        throw new Error('保存膳食计划详情失败：未返回数据');
+        throw new Error('Failed to save meal plan details: no data returned');
       }
       
       console.log('✅ Meal plan saved successfully! Inserted', insertedDetails.length, 'details');
       
-      // 保存到 store 以便缓存
+      // Save to store for caching
       setCurrentPlan(planData);
       const detailsWithRecipes = mealPlan.map((meal, index) => ({
-        id: insertedDetails[index]?.id || '',  // ✅ 使用插入后返回的数据，包含数据库生成的 id
+        id: insertedDetails[index]?.id || '',  // ✅ Use data returned after insertion, including database-generated id
         meal_plan_id: planData.id,
         recipe_id: meal.recipe.id,
         date: meal.date,
@@ -486,37 +486,37 @@ export default function Home() {
       setPlanDetails(detailsWithRecipes as any);
       
       setProgress(75);
-      setLoadingStep('正在生成购物清单...');
+      setLoadingStep('Generating shopping list...');
       
-      // 使用 API 返回的购物清单（已在后端汇总）
+      // Use shopping list returned by API (already consolidated on backend)
       const mergedItems = dbResult.shopping_list || [];
-      console.log('✅ 购物清单生成完成：', mergedItems.length, '项');
+      console.log('✅ Shopping list generated:', mergedItems.length, 'items');
       
-      // 如果购物清单为空，打印警告但不阻止流程
+      // If shopping list is empty, print warning but don't block flow
       if (mergedItems.length === 0) {
-        console.warn('⚠️ 购物清单为空，部分菜品可能缺少食材数据');
+        console.warn('⚠️ Shopping list is empty, some dishes may be missing ingredient data');
       }
       
-      // 保存购物清单
+      // Save shopping list
       await saveShoppingListFromAI(user.id, planData.id, mergedItems, supabase);
       
       setProgress(100);
-      setLoadingStep('膳食计划创建成功！');
+      setLoadingStep('Meal plan created successfully!');
       
-      // 立即跳转到 dashboard
+      // Redirect to dashboard immediately
       setTimeout(() => {
         router.push('/dashboard');
       }, 500);
     } catch (error: any) {
       console.error('Error saving profile:', error);
       
-      let errorMessage = '保存失败：' + (error.message || '未知错误');
+      let errorMessage = 'Save failed: ' + (error.message || 'Unknown error');
       if (error.message?.includes('fetch')) {
-        errorMessage = '⚠️ 无法连接到 Supabase\n\n请检查：\n1. .env.local 文件是否正确配置\n2. Supabase 项目是否正常运行\n3. 网络连接是否正常\n\n详细说明：配置说明.md';
+        errorMessage = '⚠️ Cannot connect to Supabase\n\nPlease check:\n1. .env.local file is correctly configured\n2. Supabase project is running\n3. Network connection is working\n\nSee: Configuration Guide';
       } else if (error.code === '42P01') {
-        errorMessage = '⚠️ 数据库表不存在\n\n请执行数据库初始化脚本：\n1. 打开 Supabase SQL Editor\n2. 执行 supabase/schema.sql\n3. 执行 supabase/seed-recipes.sql\n\n详细说明：配置说明.md';
-      } else if (error.message?.includes('匿名登录') || error.message?.includes('Anonymous sign-ins are disabled')) {
-        errorMessage = '⚠️ 需要启用匿名登录\n\n请在 Supabase 中启用匿名登录：\n1. 打开 Supabase Dashboard\n2. 进入 Authentication > Providers\n3. 启用 "Anonymous Sign-ins"\n\n或者您可以先注册登录再使用。';
+        errorMessage = '⚠️ Database tables do not exist\n\nPlease run database initialization scripts:\n1. Open Supabase SQL Editor\n2. Run supabase/schema.sql\n3. Run supabase/seed-recipes.sql\n\nSee: Configuration Guide';
+      } else if (error.message?.includes('Anonymous sign-ins are disabled')) {
+        errorMessage = '⚠️ Anonymous sign-ins need to be enabled\n\nPlease enable in Supabase:\n1. Open Supabase Dashboard\n2. Go to Authentication > Providers\n3. Enable "Anonymous Sign-ins"\n\nOr you can register and login first.';
       }
       
       alert(errorMessage);
@@ -525,7 +525,7 @@ export default function Home() {
     }
   };
   
-  // 正在检查是否有膳食计划时显示加载界面
+  // Show loading while checking for meal plan
   if (isCheckingPlan) {
     return (
       <div className="bg-background-light dark:bg-background-dark min-h-screen flex flex-col transition-colors duration-300">
@@ -533,7 +533,7 @@ export default function Home() {
         <div className="flex-grow flex items-center justify-center">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-            <p className="text-gray-500 dark:text-gray-400">加载中...</p>
+            <p className="text-gray-500 dark:text-gray-400">Loading...</p>
           </div>
         </div>
       </div>
@@ -548,10 +548,10 @@ export default function Home() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white mb-3">
-                设置您的膳食档案
+                Set Up Your Meal Profile
               </h1>
               <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl">
-                让 AI 为您生成最适合的 7天马来西亚美食计划！请告诉我们您的饮食偏好、预算和健康目标。
+                Let AI generate the perfect 7-day Malaysian cuisine plan for you! Tell us your dietary preferences, budget, and health goals.
               </p>
             </div>
           </div>
@@ -559,29 +559,29 @@ export default function Home() {
           {isLoggedIn ? (
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
               <p className="text-sm text-green-800 dark:text-green-300">
-                ✅ <strong>欢迎回来{userName ? `，${userName}` : ''}！</strong>您的膳食计划将自动保存到您的账户。
+                ✅ <strong>Welcome back{userName ? `, ${userName}` : ''}!</strong> Your meal plan will be automatically saved to your account.
               </p>
             </div>
           ) : (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
               <p className="text-sm text-blue-800 dark:text-blue-300">
-                💡 <strong>提示：</strong>您可以
+                💡 <strong>Tip:</strong> You can
                 {' '}
                 <button
                   onClick={() => router.push('/login')}
                   className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
                 >
-                  登录
+                  Login
                 </button>
-                {' '}或{' '}
+                {' '}or{' '}
                 <button
                   onClick={() => router.push('/register')}
                   className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
                 >
-                  注册
+                  Sign Up
                 </button>
                 {' '}
-                保存您的膳食计划，也可以直接填写下方表单匿名使用。
+                to save your meal plan, or fill out the form below to use as guest.
               </p>
             </div>
           )}
@@ -593,4 +593,3 @@ export default function Home() {
     </div>
   );
 }
-

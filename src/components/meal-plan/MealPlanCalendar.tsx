@@ -23,21 +23,21 @@ export const MealPlanCalendar: React.FC<MealPlanCalendarProps> = ({
   onMealClick,
   onReplaceMeal,
 }) => {
-  // 一周从周日开始
-  const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+  // Week starts from Sunday
+  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   
   const getMealsForDate = (date: Date) => {
     const filtered = meals.filter((meal) => {
       const mealDate = new Date(meal.date);
       const result = mealDate.toDateString() === date.toDateString();
       
-      // 调试信息
+      // Debug info
       if (!result) {
         console.log('Date mismatch:', {
           mealDate: meal.date,
           mealDateString: mealDate.toDateString(),
           selectedDate: date.toDateString(),
-          recipe: meal.recipe?.name_zh || meal.recipe?.name_en
+          recipe: meal.recipe?.name_en || meal.recipe?.name_zh
         });
       }
       
@@ -50,10 +50,10 @@ export const MealPlanCalendar: React.FC<MealPlanCalendarProps> = ({
   
   const getMealTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-      breakfast: '早餐',
-      lunch: '午餐',
-      dinner: '晚餐',
-      snack: '零食',
+      breakfast: 'Breakfast',
+      lunch: 'Lunch',
+      dinner: 'Dinner',
+      snack: 'Snack',
     };
     return labels[type] || type;
   };
@@ -61,7 +61,7 @@ export const MealPlanCalendar: React.FC<MealPlanCalendarProps> = ({
   const getDailyCalories = (date: Date) => {
     const dayMeals = getMealsForDate(date);
     return dayMeals.reduce((total, meal) => {
-      // TODO: 从 nutrition 表获取实际数据
+      // TODO: Get actual data from nutrition table
       return total + 450;
     }, 0);
   };
@@ -85,7 +85,7 @@ export const MealPlanCalendar: React.FC<MealPlanCalendarProps> = ({
             }}
             leftIcon={<ChevronLeft className="w-4 h-4" />}
           >
-            前一天
+            Previous
           </Button>
           <Button
             variant="outline"
@@ -97,7 +97,7 @@ export const MealPlanCalendar: React.FC<MealPlanCalendarProps> = ({
             }}
             rightIcon={<ChevronRight className="w-4 h-4" />}
           >
-            后一天
+            Next
           </Button>
         </div>
       </div>
@@ -105,7 +105,7 @@ export const MealPlanCalendar: React.FC<MealPlanCalendarProps> = ({
       <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-hide">
         {Array.from({ length: 7 }, (_, i) => {
           const date = new Date(selectedDate);
-          // 从周日开始：直接用 getDay() 作为偏移（周日=0, 周一=1, ...）
+          // Start from Sunday: use getDay() directly as offset (Sunday=0, Monday=1, ...)
           date.setDate(date.getDate() - date.getDay() + i);
           const isSelected = date.toDateString() === selectedDate.toDateString();
           const calories = getDailyCalories(date);
@@ -122,7 +122,7 @@ export const MealPlanCalendar: React.FC<MealPlanCalendarProps> = ({
               )}
             >
               <span className="text-sm font-bold block">{weekDays[i]}</span>
-              <span className="text-xs opacity-80">{date.getDate()}日</span>
+              <span className="text-xs opacity-80">{date.getDate()}</span>
               {calories > 0 && (
                 <Badge
                   variant={isSelected ? 'default' : 'primary'}
@@ -154,17 +154,17 @@ export const MealPlanCalendar: React.FC<MealPlanCalendarProps> = ({
                 </div>
                 
                 <h3 className="font-bold text-lg text-gray-900 dark:text-white leading-tight mb-2">
-                  {meal.recipe?.name_zh || meal.recipe?.name_en || '未知菜品'}
+                  {meal.recipe?.name_en || meal.recipe?.name_zh || 'Unknown Dish'}
                 </h3>
                 
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2 min-h-[40px]">
-                  {meal.recipe?.description || '美味的马来西亚菜肴'}
+                  {meal.recipe?.description || 'Delicious Malaysian cuisine'}
                 </p>
                 
                 <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-4">
                   <div className="flex items-center gap-1">
                     <Clock className="w-4 h-4 text-primary" />
-                    {(meal.recipe?.prep_time || 0) + (meal.recipe?.cook_time || 0)} 分钟
+                    {(meal.recipe?.prep_time || 0) + (meal.recipe?.cook_time || 0)} min
                   </div>
                   <div className="flex items-center gap-1">
                     <Flame className="w-4 h-4 text-primary" />
@@ -181,7 +181,7 @@ export const MealPlanCalendar: React.FC<MealPlanCalendarProps> = ({
                     onReplaceMeal(meal.id);
                   }}
                 >
-                  替换菜肴
+                  Replace Dish
                 </Button>
               </div>
             </Card>
@@ -189,7 +189,7 @@ export const MealPlanCalendar: React.FC<MealPlanCalendarProps> = ({
         ) : (
           <div className="col-span-full text-center py-12">
             <p className="text-gray-500 dark:text-gray-400">
-              该日期暂无膳食计划
+              No meal plan for this date
             </p>
           </div>
         )}
@@ -197,5 +197,3 @@ export const MealPlanCalendar: React.FC<MealPlanCalendarProps> = ({
     </div>
   );
 };
-
-

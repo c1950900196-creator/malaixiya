@@ -44,9 +44,9 @@ export const NutritionDashboard: React.FC<NutritionDashboardProps> = ({
   };
   
   const macroData = [
-    { name: '蛋白质', value: weeklyAverage.protein, color: '#3b82f6' },
-    { name: '碳水', value: weeklyAverage.carbs, color: '#eab308' },
-    { name: '脂肪', value: weeklyAverage.fat, color: '#ef4444' },
+    { name: 'Protein', value: weeklyAverage.protein, color: '#3b82f6' },
+    { name: 'Carbs', value: weeklyAverage.carbs, color: '#eab308' },
+    { name: 'Fat', value: weeklyAverage.fat, color: '#ef4444' },
   ];
   
   const totalMacros = weeklyAverage.protein + weeklyAverage.carbs + weeklyAverage.fat;
@@ -60,7 +60,7 @@ export const NutritionDashboard: React.FC<NutritionDashboardProps> = ({
   
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-white mb-2">营养摄入分析</h1>
+      <h1 className="text-3xl font-bold text-white mb-2">Nutrition Analysis</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-surface-dark border-border-dark relative overflow-hidden group hover:border-primary/30 transition-colors">
@@ -68,13 +68,13 @@ export const NutritionDashboard: React.FC<NutritionDashboardProps> = ({
             <div className="flex justify-between items-start mb-4">
               <div>
                 <p className="text-xs text-text-muted font-medium uppercase tracking-wide">
-                  每周总热量
+                  Weekly Calories
                 </p>
                 <h3 className="text-2xl font-bold text-white mt-1">
                   {weeklyData.reduce((sum, day) => sum + day.calories, 0).toLocaleString()}
                 </h3>
                 <p className="text-xs text-text-muted mt-1">
-                  平均 {weeklyAverage.calories} kcal/天
+                  Avg {weeklyAverage.calories} kcal/day
                 </p>
               </div>
               <div className="p-1.5 bg-surface-darker rounded text-primary">
@@ -86,8 +86,8 @@ export const NutritionDashboard: React.FC<NutritionDashboardProps> = ({
               size="sm"
             >
               {getComplianceStatus(weeklyAverage.calories, dailyTarget.calories) === 'success'
-                ? '达标'
-                : '需调整'}
+                ? 'On Track'
+                : 'Needs Adjustment'}
             </Badge>
           </CardContent>
         </Card>
@@ -97,10 +97,10 @@ export const NutritionDashboard: React.FC<NutritionDashboardProps> = ({
             <div className="flex justify-between items-start mb-4">
               <div>
                 <p className="text-xs text-text-muted font-medium uppercase tracking-wide">
-                  平均蛋白质
+                  Avg Protein
                 </p>
                 <h3 className="text-2xl font-bold text-white mt-1">{weeklyAverage.protein}g</h3>
-                <p className="text-xs text-text-muted mt-1">目标: {dailyTarget.protein}g</p>
+                <p className="text-xs text-text-muted mt-1">Target: {dailyTarget.protein}g</p>
               </div>
               <div className="p-1.5 bg-surface-darker rounded text-blue-400">
                 <Activity className="w-5 h-5" />
@@ -120,10 +120,10 @@ export const NutritionDashboard: React.FC<NutritionDashboardProps> = ({
             <div className="flex justify-between items-start mb-4">
               <div>
                 <p className="text-xs text-text-muted font-medium uppercase tracking-wide">
-                  平均碳水
+                  Avg Carbs
                 </p>
                 <h3 className="text-2xl font-bold text-white mt-1">{weeklyAverage.carbs}g</h3>
-                <p className="text-xs text-text-muted mt-1">目标: {dailyTarget.carbs}g</p>
+                <p className="text-xs text-text-muted mt-1">Target: {dailyTarget.carbs}g</p>
               </div>
               <div className="p-1.5 bg-surface-darker rounded text-yellow-400">
                 <TrendingUp className="w-5 h-5" />
@@ -143,10 +143,10 @@ export const NutritionDashboard: React.FC<NutritionDashboardProps> = ({
             <div className="flex justify-between items-start mb-4">
               <div>
                 <p className="text-xs text-text-muted font-medium uppercase tracking-wide">
-                  平均脂肪
+                  Avg Fat
                 </p>
                 <h3 className="text-2xl font-bold text-white mt-1">{weeklyAverage.fat}g</h3>
-                <p className="text-xs text-text-muted mt-1">目标: {dailyTarget.fat}g</p>
+                <p className="text-xs text-text-muted mt-1">Target: {dailyTarget.fat}g</p>
               </div>
               <div className="p-1.5 bg-surface-darker rounded text-red-400">
                 <Target className="w-5 h-5" />
@@ -165,7 +165,7 @@ export const NutritionDashboard: React.FC<NutritionDashboardProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 bg-surface-dark border-border-dark">
           <CardHeader>
-            <CardTitle className="text-white">每周热量趋势</CardTitle>
+            <CardTitle className="text-white">Weekly Calorie Trend</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -188,7 +188,7 @@ export const NutritionDashboard: React.FC<NutritionDashboardProps> = ({
         
         <Card className="bg-surface-dark border-border-dark flex flex-col">
           <CardHeader>
-            <CardTitle className="text-white">宏量营养素比例</CardTitle>
+            <CardTitle className="text-white">Macronutrient Ratio</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col items-center justify-center">
             <ResponsiveContainer width="100%" height={250}>
@@ -229,8 +229,3 @@ export const NutritionDashboard: React.FC<NutritionDashboardProps> = ({
     </div>
   );
 };
-
-
-
-
-

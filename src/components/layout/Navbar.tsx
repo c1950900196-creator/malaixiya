@@ -15,20 +15,20 @@ export const Navbar: React.FC = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   
   const navItems = [
-    { href: '/dashboard', label: '膳食计划' },
-    { href: '/shopping-list', label: '购物清单' },
-    { href: '/analytics', label: '营养分析' },
+    { href: '/dashboard', label: 'Meal Plan' },
+    { href: '/shopping-list', label: 'Shopping List' },
+    { href: '/analytics', label: 'Nutrition' },
   ];
   
   useEffect(() => {
     const supabase = createBrowserClient();
     
-    // 获取当前用户
+    // Get current user
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
     });
     
-    // 监听认证状态变化
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
@@ -46,9 +46,9 @@ export const Navbar: React.FC = () => {
   };
   
   const getUserDisplayName = () => {
-    if (!user) return '游客';
-    if (user.is_anonymous) return '游客';
-    return user.user_metadata?.full_name || user.email?.split('@')[0] || '用户';
+    if (!user) return 'Guest';
+    if (user.is_anonymous) return 'Guest';
+    return user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
   };
   
   return (
@@ -105,7 +105,7 @@ export const Navbar: React.FC = () => {
                           className="block px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700"
                           onClick={() => setShowUserMenu(false)}
                         >
-                          个人资料
+                          Profile
                         </Link>
                         <div className="border-t border-zinc-200 dark:border-zinc-700 my-1"></div>
                       </>
@@ -115,7 +115,7 @@ export const Navbar: React.FC = () => {
                       className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 flex items-center gap-2"
                     >
                       <LogOut className="w-4 h-4" />
-                      登出
+                      Logout
                     </button>
                   </div>
                 )}
@@ -127,13 +127,13 @@ export const Navbar: React.FC = () => {
                   className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-primary dark:hover:text-primary transition-colors"
                 >
                   <LogIn className="w-4 h-4" />
-                  登录
+                  Login
                 </Link>
                 <Link
                   href="/register"
                   className="px-4 py-2 text-sm font-medium bg-primary text-black rounded-lg hover:bg-primary/90 transition-colors"
                 >
-                  注册
+                  Sign Up
                 </Link>
               </div>
             )}
@@ -144,7 +144,7 @@ export const Navbar: React.FC = () => {
         </div>
       </div>
       
-      {/* 点击外部关闭菜单 */}
+      {/* Click outside to close menu */}
       {showUserMenu && (
         <div
           className="fixed inset-0 z-40"
@@ -154,4 +154,3 @@ export const Navbar: React.FC = () => {
     </nav>
   );
 };
-

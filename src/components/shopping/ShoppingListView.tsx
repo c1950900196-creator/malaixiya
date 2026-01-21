@@ -17,7 +17,7 @@ interface ShoppingListViewProps {
   items: (ShoppingListItem & { ingredient?: Ingredient })[];
   onToggleItem: (itemId: string, isPurchased: boolean) => void;
   onExportPDF: () => void;
-  onRefresh?: () => void; // 可选的刷新回调
+  onRefresh?: () => void; // Optional refresh callback
 }
 
 export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
@@ -29,7 +29,7 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
   const [filterCategory, setFilterCategory] = useState<string>('all');
   
   const groupedItems: GroupedItems = items.reduce((acc, item) => {
-    const category = item.category || '其他';
+    const category = item.category || 'Other';
     if (!acc[category]) {
       acc[category] = [];
     }
@@ -43,13 +43,13 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
   
   const getCategoryIcon = (category: string) => {
     const icons: Record<string, string> = {
-      '新鲜蔬菜': '🥬',
-      '肉类 & 海鲜': '🥩',
-      '谷物 & 主食': '🌾',
-      '调味料': '🧂',
-      '水果': '🍎',
-      '乳制品': '🥛',
-      '其他': '📦',
+      'Fresh Vegetables': '🥬',
+      'Meat & Seafood': '🥩',
+      'Grains & Staples': '🌾',
+      'Seasonings': '🧂',
+      'Fruits': '🍎',
+      'Dairy': '🥛',
+      'Other': '📦',
     };
     return icons[category] || '📦';
   };
@@ -59,16 +59,16 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
       ? categories
       : categories.filter((cat) => cat === filterCategory);
   
-  // 空状态显示
+  // Empty state
   if (items.length === 0) {
     return (
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            我的每周购物清单
+            My Weekly Shopping List
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            根据您的膳食计划自动生成购物清单
+            Shopping list is auto-generated based on your meal plan
           </p>
         </div>
         
@@ -80,17 +80,17 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  暂无购物清单
+                  No Shopping List Yet
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                  购物清单将在您创建膳食计划后自动生成。请先前往首页创建您的个性化膳食计划。
+                  Shopping list will be auto-generated after you create a meal plan. Please go to home page to create your personalized meal plan first.
                 </p>
               </div>
               <Button
                 variant="primary"
                 onClick={() => window.location.href = '/'}
               >
-                创建膳食计划
+                Create Meal Plan
               </Button>
             </div>
           </CardContent>
@@ -104,10 +104,10 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            我的每周购物清单
+            My Weekly Shopping List
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            包含7天所需的所有食材 • {purchasedCount} / {items.length} 已购买
+            All ingredients for 7 days • {purchasedCount} / {items.length} purchased
           </p>
         </div>
         <div className="flex gap-2">
@@ -118,11 +118,11 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
               leftIcon={<RefreshCw className="w-4 h-4" />}
               onClick={onRefresh}
             >
-              刷新
+              Refresh
             </Button>
           )}
           <Button variant="outline" size="sm" leftIcon={<Printer className="w-4 h-4" />}>
-            打印清单
+            Print List
           </Button>
           <Button
             variant="primary"
@@ -130,7 +130,7 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
             leftIcon={<Download className="w-4 h-4" />}
             onClick={onExportPDF}
           >
-            导出 PDF
+            Export PDF
           </Button>
         </div>
       </div>
@@ -141,7 +141,7 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
           size="sm"
           onClick={() => setFilterCategory('all')}
         >
-          全部 ({items.length})
+          All ({items.length})
         </Button>
         {categories.map((category) => (
           <Button
@@ -165,7 +165,7 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
                   <CardTitle className="text-lg">{category}</CardTitle>
                 </div>
                 <Badge variant="default" size="sm">
-                  {groupedItems[category].length} 项
+                  {groupedItems[category].length} items
                 </Badge>
               </div>
             </CardHeader>
@@ -187,12 +187,12 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
                             : 'text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors'
                         }
                       >
-                        {/* 优先使用 notes 字段（AI 生成的食材名），否则用 ingredient 关联的食材 */}
+                        {/* Prefer notes field (AI-generated ingredient name), fallback to ingredient relation */}
                         {item.notes?.split('|')[0]?.trim() || 
                          item.ingredient?.name_zh || 
                          item.ingredient?.name_ms || 
                          item.ingredient?.name_en || 
-                         '未知食材'}
+                         'Unknown Ingredient'}
                       </p>
                       <div className="flex items-center justify-between mt-1">
                         <p className="text-xs text-gray-600 dark:text-gray-300">
@@ -221,12 +221,12 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
                 <Package className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-sm font-medium text-white/90">预估总费用</p>
+                <p className="text-sm font-medium text-white/90">Estimated Total</p>
                 <p className="text-3xl font-bold text-white">{formatPrice(totalCost)}</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-sm text-white/90">购物进度</p>
+              <p className="text-sm text-white/90">Shopping Progress</p>
               <p className="text-2xl font-bold text-white">
                 {Math.round((purchasedCount / items.length) * 100)}%
               </p>
@@ -237,5 +237,3 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
     </div>
   );
 };
-
-

@@ -43,14 +43,14 @@ export default function ProfilePage() {
         return;
       }
       
-      // 设置邮箱
+      // Set email
       setFormData(prev => ({
         ...prev,
         email: user.email || '',
         full_name: user.user_metadata?.full_name || '',
       }));
       
-      // 加载用户档案（使用 maybeSingle 避免 406 错误）
+      // Load user profile (use maybeSingle to avoid 406 error)
       const { data: profile } = await supabase
         .from('user_profiles')
         .select('*')
@@ -72,7 +72,7 @@ export default function ProfilePage() {
       }
     } catch (error) {
       console.error('Error loading profile:', error);
-      setError('加载个人资料失败');
+      setError('Failed to load profile');
     } finally {
       setIsLoading(false);
     }
@@ -92,12 +92,12 @@ export default function ProfilePage() {
         return;
       }
       
-      // 更新用户元数据
+      // Update user metadata
       await supabase.auth.updateUser({
         data: { full_name: formData.full_name }
       });
       
-      // 更新或插入用户档案
+      // Update or insert user profile
       const { error: profileError } = await supabase
         .from('user_profiles')
         .upsert({
@@ -115,11 +115,11 @@ export default function ProfilePage() {
       
       if (profileError) throw profileError;
       
-      setSuccess('个人资料已保存！');
+      setSuccess('Profile saved successfully!');
       setTimeout(() => setSuccess(''), 3000);
     } catch (error: any) {
       console.error('Error saving profile:', error);
-      setError(error.message || '保存失败，请重试');
+      setError(error.message || 'Save failed, please try again');
     } finally {
       setIsSaving(false);
     }
@@ -131,7 +131,7 @@ export default function ProfilePage() {
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-            <p className="text-gray-500 dark:text-gray-400">加载个人资料...</p>
+            <p className="text-gray-500 dark:text-gray-400">Loading profile...</p>
           </div>
         </div>
       </MainLayout>
@@ -150,8 +150,8 @@ export default function ProfilePage() {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">个人资料</h1>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">管理您的账户信息</p>
+              <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Profile</h1>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">Manage your account information</p>
             </div>
           </div>
 
@@ -171,58 +171,58 @@ export default function ProfilePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="w-5 h-5" />
-                账户信息
+                Account Information
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <Input
-                label="邮箱"
+                label="Email"
                 type="email"
                 value={formData.email}
                 disabled
                 leftIcon={<Mail className="w-4 h-4" />}
               />
               <Input
-                label="姓名"
+                label="Full Name"
                 type="text"
                 value={formData.full_name}
                 onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
-                placeholder="请输入您的姓名"
+                placeholder="Enter your name"
               />
             </CardContent>
           </Card>
 
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>身体信息</CardTitle>
+              <CardTitle>Body Information</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
-                  label="年龄"
+                  label="Age"
                   type="number"
                   value={formData.age}
                   onChange={(e) => setFormData(prev => ({ ...prev, age: Number(e.target.value) }))}
                 />
                 <Select
-                  label="性别"
+                  label="Gender"
                   value={formData.gender}
                   onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value }))}
                   options={[
-                    { value: 'male', label: '男' },
-                    { value: 'female', label: '女' },
-                    { value: 'other', label: '其他' },
+                    { value: 'male', label: 'Male' },
+                    { value: 'female', label: 'Female' },
+                    { value: 'other', label: 'Other' },
                   ]}
                 />
                 <Input
-                  label="体重 (kg)"
+                  label="Weight (kg)"
                   type="number"
                   step="0.1"
                   value={formData.weight}
                   onChange={(e) => setFormData(prev => ({ ...prev, weight: Number(e.target.value) }))}
                 />
                 <Input
-                  label="身高 (cm)"
+                  label="Height (cm)"
                   type="number"
                   value={formData.height}
                   onChange={(e) => setFormData(prev => ({ ...prev, height: Number(e.target.value) }))}
@@ -233,34 +233,34 @@ export default function ProfilePage() {
 
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>健康目标</CardTitle>
+              <CardTitle>Health Goals</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Select
-                  label="健康目标"
+                  label="Health Goal"
                   value={formData.health_goal}
                   onChange={(e) => setFormData(prev => ({ ...prev, health_goal: e.target.value }))}
                   options={[
-                    { value: 'lose_weight', label: '减重' },
-                    { value: 'gain_muscle', label: '增肌' },
-                    { value: 'maintain', label: '保持体重' },
+                    { value: 'lose_weight', label: 'Lose Weight' },
+                    { value: 'gain_muscle', label: 'Build Muscle' },
+                    { value: 'maintain', label: 'Maintain Weight' },
                   ]}
                 />
                 <Select
-                  label="活动水平"
+                  label="Activity Level"
                   value={formData.activity_level}
                   onChange={(e) => setFormData(prev => ({ ...prev, activity_level: e.target.value }))}
                   options={[
-                    { value: 'sedentary', label: '久坐不动' },
-                    { value: 'lightly_active', label: '轻度活动' },
-                    { value: 'moderately_active', label: '中度活动' },
-                    { value: 'very_active', label: '高度活动' },
-                    { value: 'extremely_active', label: '极高活动' },
+                    { value: 'sedentary', label: 'Sedentary' },
+                    { value: 'lightly_active', label: 'Lightly Active' },
+                    { value: 'moderately_active', label: 'Moderately Active' },
+                    { value: 'very_active', label: 'Very Active' },
+                    { value: 'extremely_active', label: 'Extremely Active' },
                   ]}
                 />
                 <Input
-                  label="每周预算 (MYR)"
+                  label="Weekly Budget (MYR)"
                   type="number"
                   value={formData.weekly_budget}
                   onChange={(e) => setFormData(prev => ({ ...prev, weekly_budget: Number(e.target.value) }))}
@@ -276,11 +276,10 @@ export default function ProfilePage() {
             isLoading={isSaving}
             leftIcon={<Save className="w-4 h-4" />}
           >
-            保存更改
+            Save Changes
           </Button>
         </div>
       </div>
     </MainLayout>
   );
 }
-

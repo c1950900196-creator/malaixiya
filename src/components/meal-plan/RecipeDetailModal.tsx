@@ -41,20 +41,20 @@ export const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({
           <div className="relative h-96 w-full">
             <Image
               src={recipe.image_url}
-              alt={recipe.name_zh || recipe.name_en}
+              alt={recipe.name_en || recipe.name_zh}
               fill
               className="object-cover opacity-90"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-surface-dark via-surface-dark/70 to-transparent" />
             <div className="absolute inset-0 flex flex-col justify-end p-8">
               <h1 className="text-4xl font-bold text-white mb-2 tracking-wide leading-tight">
-                {recipe.name_zh || recipe.name_en}
+                {recipe.name_en || recipe.name_zh}
               </h1>
               <p className="text-xl text-primary font-medium">{recipe.name_ms}</p>
               <div className="flex flex-wrap items-center gap-4 mt-4">
-                {recipe.is_halal && <Badge variant="success">清真 Halal</Badge>}
-                {recipe.is_vegetarian && <Badge variant="info">素食</Badge>}
-                {recipe.is_diabetic_friendly && <Badge variant="warning">糖尿病友好</Badge>}
+                {recipe.is_halal && <Badge variant="success">Halal</Badge>}
+                {recipe.is_vegetarian && <Badge variant="info">Vegetarian</Badge>}
+                {recipe.is_diabetic_friendly && <Badge variant="warning">Diabetic Friendly</Badge>}
               </div>
             </div>
           </div>
@@ -67,11 +67,11 @@ export const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({
                 <div className="flex items-center gap-4 mb-4">
                   <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                     <Clock className="w-5 h-5 text-primary" />
-                    <span className="text-sm">{totalTime} 分钟</span>
+                    <span className="text-sm">{totalTime} min</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                     <Users className="w-5 h-5 text-primary" />
-                    <span className="text-sm">{recipe.servings} 人份</span>
+                    <span className="text-sm">{recipe.servings} servings</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                     <ChefHat className="w-5 h-5 text-primary" />
@@ -95,14 +95,14 @@ export const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({
               <Card>
                 <div className="p-6">
                   <h3 className="font-bold text-lg mb-4 text-gray-900 dark:text-white">
-                    营养信息
+                    Nutrition Facts
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[
-                      { label: '蛋白质', value: recipe.nutrition.protein, unit: 'g', color: 'text-blue-600' },
-                      { label: '碳水化合物', value: recipe.nutrition.carbohydrates, unit: 'g', color: 'text-yellow-600' },
-                      { label: '脂肪', value: recipe.nutrition.fat, unit: 'g', color: 'text-red-600' },
-                      { label: '纤维', value: recipe.nutrition.fiber, unit: 'g', color: 'text-green-600' },
+                      { label: 'Protein', value: recipe.nutrition.protein, unit: 'g', color: 'text-blue-600' },
+                      { label: 'Carbs', value: recipe.nutrition.carbohydrates, unit: 'g', color: 'text-yellow-600' },
+                      { label: 'Fat', value: recipe.nutrition.fat, unit: 'g', color: 'text-red-600' },
+                      { label: 'Fiber', value: recipe.nutrition.fiber, unit: 'g', color: 'text-green-600' },
                     ].map((item) => (
                       <div key={item.label} className="text-center p-3 bg-gray-50 dark:bg-surface-darker rounded-lg">
                         <p className="text-sm text-gray-500 dark:text-gray-400">{item.label}</p>
@@ -118,7 +118,7 @@ export const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({
             
             {recipe.steps && recipe.steps.length > 0 && (
               <div className="space-y-4">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">烹饪步骤</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Cooking Steps</h2>
                 {recipe.steps
                   .sort((a, b) => a.step_number - b.step_number)
                   .map((step) => (
@@ -136,7 +136,7 @@ export const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({
                           </p>
                           {step.duration && (
                             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                              ⏱️ 约 {step.duration} 分钟
+                              ⏱️ About {step.duration} min
                             </p>
                           )}
                         </div>
@@ -152,10 +152,10 @@ export const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({
               <Card>
                 <div className="p-5 border-b border-gray-200 dark:border-border-dark flex justify-between items-center">
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                    所需食材
+                    Ingredients
                   </h3>
                   <Badge variant="default" size="sm">
-                    {recipe.ingredients.length} 项
+                    {recipe.ingredients.length} items
                   </Badge>
                 </div>
                 <div className="p-2 max-h-[500px] overflow-y-auto">
@@ -168,7 +168,7 @@ export const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({
                         <Checkbox />
                         <div className="ml-3 flex-1">
                           <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                            {item.ingredient.name_zh || item.ingredient.name_ms}
+                            {item.ingredient.name_en || item.ingredient.name_ms || item.ingredient.name_zh}
                           </p>
                           <p className="text-xs text-gray-500 dark:text-gray-400">
                             {item.quantity} {item.unit}
@@ -185,7 +185,7 @@ export const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({
                     onClick={onAddToShoppingList}
                     leftIcon={<ShoppingCart className="w-4 h-4" />}
                   >
-                    全部加入购物清单
+                    Add All to Shopping List
                   </Button>
                 </div>
               </Card>
@@ -196,8 +196,3 @@ export const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({
     </div>
   );
 };
-
-
-
-
-

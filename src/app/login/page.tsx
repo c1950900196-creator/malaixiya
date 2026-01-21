@@ -32,12 +32,12 @@ export default function LoginPage() {
       if (error) throw error;
 
       if (data.user) {
-        // 登录成功，跳转到首页
+        // Login successful, redirect to home
         router.push('/');
       }
     } catch (err: any) {
       console.error('Login error:', err);
-      setError(err.message || '登录失败，请检查邮箱和密码');
+      setError(err.message || 'Login failed. Please check your email and password.');
     } finally {
       setIsLoading(false);
     }
@@ -55,16 +55,16 @@ export default function LoginPage() {
       if (error) throw error;
 
       if (data.user) {
-        // 匿名登录成功，跳转到首页
+        // Anonymous login successful, redirect to home
         router.push('/');
       }
     } catch (err: any) {
       console.error('Anonymous login error:', err);
       
       if (err.message?.includes('Anonymous sign-ins are disabled')) {
-        setError('⚠️ 需要启用匿名登录\n\n请在 Supabase Dashboard > Authentication > Providers 中启用 "Anonymous Sign-ins"');
+        setError('⚠️ Anonymous sign-ins need to be enabled.\n\nPlease enable "Anonymous Sign-ins" in Supabase Dashboard > Authentication > Providers.');
       } else {
-        setError(err.message || '匿名登录失败');
+        setError(err.message || 'Anonymous login failed');
       }
     } finally {
       setIsLoading(false);
@@ -79,7 +79,7 @@ export default function LoginPage() {
           className="inline-flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400 hover:text-primary mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          返回首页
+          Back to Home
         </Link>
 
         <Card className="shadow-xl">
@@ -87,9 +87,9 @@ export default function LoginPage() {
             <div className="mb-4 text-center">
               <span className="text-5xl">🍜</span>
             </div>
-            <CardTitle className="text-2xl">欢迎回来</CardTitle>
+            <CardTitle className="text-2xl">Welcome Back</CardTitle>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
-              登录您的账户，继续您的健康膳食计划
+              Login to continue your healthy meal plan
             </p>
           </CardHeader>
 
@@ -102,7 +102,7 @@ export default function LoginPage() {
               )}
 
               <Input
-                label="邮箱"
+                label="Email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -112,7 +112,7 @@ export default function LoginPage() {
               />
 
               <Input
-                label="密码"
+                label="Password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -128,7 +128,7 @@ export default function LoginPage() {
                 isLoading={isLoading}
                 disabled={isLoading}
               >
-                登录
+                Login
               </Button>
             </form>
 
@@ -138,7 +138,7 @@ export default function LoginPage() {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="bg-white dark:bg-zinc-800 px-2 text-zinc-500 dark:text-zinc-400">
-                  或
+                  or
                 </span>
               </div>
             </div>
@@ -151,17 +151,17 @@ export default function LoginPage() {
               disabled={isLoading}
             >
               <span className="mr-2">👤</span>
-              游客模式（无需注册）
+              Guest Mode (No registration required)
             </Button>
 
             <div className="mt-6 text-center text-sm">
-              <span className="text-zinc-600 dark:text-zinc-400">还没有账户？</span>
+              <span className="text-zinc-600 dark:text-zinc-400">Don't have an account?</span>
               {' '}
               <Link
                 href="/register"
                 className="text-primary hover:underline font-medium"
               >
-                立即注册
+                Sign Up
               </Link>
             </div>
 
@@ -170,21 +170,16 @@ export default function LoginPage() {
                 href="/forgot-password"
                 className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-primary transition-colors"
               >
-                忘记密码？
+                Forgot password?
               </Link>
             </div>
           </CardContent>
         </Card>
 
         <p className="text-center text-xs text-zinc-500 dark:text-zinc-400 mt-6">
-          登录即表示您同意我们的服务条款和隐私政策
+          By logging in, you agree to our Terms of Service and Privacy Policy
         </p>
       </div>
     </div>
   );
 }
-
-
-
-
-

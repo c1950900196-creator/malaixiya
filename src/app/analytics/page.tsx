@@ -7,13 +7,13 @@ import { createBrowserClient } from '@/lib/supabase';
 
 export default function AnalyticsPage() {
   const [weeklyData, setWeeklyData] = useState([
-    { date: '周一', calories: 1820, protein: 115, carbs: 195, fat: 62 },
-    { date: '周二', calories: 1950, protein: 128, carbs: 210, fat: 68 },
-    { date: '周三', calories: 1780, protein: 112, carbs: 188, fat: 59 },
-    { date: '周四', calories: 1890, protein: 122, carbs: 202, fat: 65 },
-    { date: '周五', calories: 1850, protein: 118, carbs: 198, fat: 63 },
-    { date: '周六', calories: 2100, protein: 135, carbs: 225, fat: 72 },
-    { date: '周日', calories: 1920, protein: 125, carbs: 205, fat: 66 },
+    { date: 'Mon', calories: 1820, protein: 115, carbs: 195, fat: 62 },
+    { date: 'Tue', calories: 1950, protein: 128, carbs: 210, fat: 68 },
+    { date: 'Wed', calories: 1780, protein: 112, carbs: 188, fat: 59 },
+    { date: 'Thu', calories: 1890, protein: 122, carbs: 202, fat: 65 },
+    { date: 'Fri', calories: 1850, protein: 118, carbs: 198, fat: 63 },
+    { date: 'Sat', calories: 2100, protein: 135, carbs: 225, fat: 72 },
+    { date: 'Sun', calories: 1920, protein: 125, carbs: 205, fat: 66 },
   ]);
   
   const dailyTarget = {
@@ -31,8 +31,3 @@ export default function AnalyticsPage() {
     </MainLayout>
   );
 }
-
-
-
-
-

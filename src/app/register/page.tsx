@@ -25,15 +25,15 @@ export default function RegisterPage() {
     setError('');
     setSuccess('');
 
-    // 验证密码
+    // Validate password
     if (password !== confirmPassword) {
-      setError('两次输入的密码不一致');
+      setError('Passwords do not match');
       setIsLoading(false);
       return;
     }
 
     if (password.length < 6) {
-      setError('密码至少需要6个字符');
+      setError('Password must be at least 6 characters');
       setIsLoading(false);
       return;
     }
@@ -54,24 +54,24 @@ export default function RegisterPage() {
       if (error) throw error;
 
       if (data.user) {
-        // 检查是否需要邮箱验证
+        // Check if email verification is required
         if (data.user.identities && data.user.identities.length === 0) {
-          setError('此邮箱已被注册，请直接登录');
+          setError('This email is already registered. Please login instead.');
           setIsLoading(false);
           return;
         }
 
-        // 注册成功
-        setSuccess('注册成功！');
+        // Registration successful
+        setSuccess('Registration successful!');
         
-        // 如果需要邮箱验证
+        // If email verification is required
         if (data.user.email_confirmed_at === null) {
-          setSuccess('注册成功！请查收邮箱中的验证链接。');
+          setSuccess('Registration successful! Please check your email for verification link.');
           setTimeout(() => {
             router.push('/login');
           }, 3000);
         } else {
-          // 如果不需要邮箱验证（禁用了邮箱验证），直接跳转
+          // If email verification is disabled, redirect directly
           setTimeout(() => {
             router.push('/');
           }, 1500);
@@ -80,14 +80,14 @@ export default function RegisterPage() {
     } catch (err: any) {
       console.error('Registration error:', err);
       
-      let errorMessage = err.message || '注册失败';
+      let errorMessage = err.message || 'Registration failed';
       
       if (err.message?.includes('already registered')) {
-        errorMessage = '此邮箱已被注册，请直接登录';
+        errorMessage = 'This email is already registered. Please login instead.';
       } else if (err.message?.includes('Invalid email')) {
-        errorMessage = '邮箱格式不正确';
+        errorMessage = 'Invalid email format';
       } else if (err.message?.includes('Email rate limit exceeded')) {
-        errorMessage = '发送邮件过于频繁，请稍后再试';
+        errorMessage = 'Too many attempts. Please try again later.';
       }
       
       setError(errorMessage);
@@ -104,7 +104,7 @@ export default function RegisterPage() {
           className="inline-flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400 hover:text-primary mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          返回首页
+          Back to Home
         </Link>
 
         <Card className="shadow-xl">
@@ -112,9 +112,9 @@ export default function RegisterPage() {
             <div className="mb-4 text-center">
               <span className="text-5xl">🥗</span>
             </div>
-            <CardTitle className="text-2xl">创建账户</CardTitle>
+            <CardTitle className="text-2xl">Create Account</CardTitle>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
-              开始您的个性化健康膳食之旅
+              Start your personalized healthy meal journey
             </p>
           </CardHeader>
 
@@ -133,17 +133,17 @@ export default function RegisterPage() {
               )}
 
               <Input
-                label="姓名"
+                label="Full Name"
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="张三"
+                placeholder="John Doe"
                 required
                 leftIcon={<User className="w-4 h-4" />}
               />
 
               <Input
-                label="邮箱"
+                label="Email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -153,21 +153,21 @@ export default function RegisterPage() {
               />
 
               <Input
-                label="密码"
+                label="Password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="至少6个字符"
+                placeholder="At least 6 characters"
                 required
                 leftIcon={<Lock className="w-4 h-4" />}
               />
 
               <Input
-                label="确认密码"
+                label="Confirm Password"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="再次输入密码"
+                placeholder="Re-enter password"
                 required
                 leftIcon={<Lock className="w-4 h-4" />}
               />
@@ -179,32 +179,27 @@ export default function RegisterPage() {
                 isLoading={isLoading}
                 disabled={isLoading || !!success}
               >
-                {success ? '注册成功！' : '注册'}
+                {success ? 'Success!' : 'Sign Up'}
               </Button>
             </form>
 
             <div className="mt-6 text-center text-sm">
-              <span className="text-zinc-600 dark:text-zinc-400">已有账户？</span>
+              <span className="text-zinc-600 dark:text-zinc-400">Already have an account?</span>
               {' '}
               <Link
                 href="/login"
                 className="text-primary hover:underline font-medium"
               >
-                立即登录
+                Login
               </Link>
             </div>
           </CardContent>
         </Card>
 
         <p className="text-center text-xs text-zinc-500 dark:text-zinc-400 mt-6">
-          注册即表示您同意我们的服务条款和隐私政策
+          By signing up, you agree to our Terms of Service and Privacy Policy
         </p>
       </div>
     </div>
   );
 }
-
-
-
-
-

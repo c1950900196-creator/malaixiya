@@ -19,13 +19,13 @@ export default function ResetPasswordPage() {
   const [isValidToken, setIsValidToken] = useState(false);
 
   useEffect(() => {
-    // 检查是否有有效的重置令牌
+    // Check if there's a valid reset token
     const supabase = createBrowserClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setIsValidToken(true);
       } else {
-        setError('重置密码链接无效或已过期，请重新申请');
+        setError('Reset password link is invalid or expired. Please request a new one.');
       }
     });
   }, []);
@@ -36,15 +36,15 @@ export default function ResetPasswordPage() {
     setError('');
     setSuccess('');
 
-    // 验证密码
+    // Validate password
     if (password !== confirmPassword) {
-      setError('两次输入的密码不一致');
+      setError('Passwords do not match');
       setIsLoading(false);
       return;
     }
 
     if (password.length < 6) {
-      setError('密码至少需要6个字符');
+      setError('Password must be at least 6 characters');
       setIsLoading(false);
       return;
     }
@@ -58,14 +58,14 @@ export default function ResetPasswordPage() {
 
       if (error) throw error;
 
-      setSuccess('密码重置成功！正在跳转到登录页...');
+      setSuccess('Password reset successful! Redirecting to login...');
       
       setTimeout(() => {
         router.push('/login');
       }, 2000);
     } catch (err: any) {
       console.error('Password reset error:', err);
-      setError(err.message || '密码重置失败，请重试');
+      setError(err.message || 'Password reset failed, please try again');
     } finally {
       setIsLoading(false);
     }
@@ -75,7 +75,7 @@ export default function ResetPasswordPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-900 flex items-center justify-center p-4">
         <div className="text-center">
-          <p className="text-zinc-600 dark:text-zinc-400">正在验证...</p>
+          <p className="text-zinc-600 dark:text-zinc-400">Verifying...</p>
         </div>
       </div>
     );
@@ -89,7 +89,7 @@ export default function ResetPasswordPage() {
           className="inline-flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400 hover:text-primary mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          返回登录
+          Back to Login
         </Link>
 
         <Card className="shadow-xl">
@@ -97,9 +97,9 @@ export default function ResetPasswordPage() {
             <div className="mb-4 text-center">
               <span className="text-5xl">🔑</span>
             </div>
-            <CardTitle className="text-2xl">重置密码</CardTitle>
+            <CardTitle className="text-2xl">Reset Password</CardTitle>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
-              请输入您的新密码
+              Please enter your new password
             </p>
           </CardHeader>
 
@@ -115,7 +115,7 @@ export default function ResetPasswordPage() {
                     variant="primary"
                     className="w-full"
                   >
-                    重新申请重置密码
+                    Request New Reset Link
                   </Button>
                 </Link>
               </div>
@@ -134,21 +134,21 @@ export default function ResetPasswordPage() {
                 )}
 
                 <Input
-                  label="新密码"
+                  label="New Password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="至少6个字符"
+                  placeholder="At least 6 characters"
                   required
                   leftIcon={<Lock className="w-4 h-4" />}
                 />
 
                 <Input
-                  label="确认新密码"
+                  label="Confirm New Password"
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="再次输入新密码"
+                  placeholder="Re-enter new password"
                   required
                   leftIcon={<Lock className="w-4 h-4" />}
                 />
@@ -160,7 +160,7 @@ export default function ResetPasswordPage() {
                   isLoading={isLoading}
                   disabled={isLoading || !!success}
                 >
-                  {success ? '密码已重置' : '重置密码'}
+                  {success ? 'Password Reset!' : 'Reset Password'}
                 </Button>
               </form>
             )}
@@ -170,8 +170,3 @@ export default function ResetPasswordPage() {
     </div>
   );
 }
-
-
-
-
-

@@ -24,7 +24,7 @@ export const LoadingProgress: React.FC<LoadingProgressProps> = ({ step, progress
         </div>
         
         <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-4">
-          正在生成您的膳食计划
+          Generating Your Meal Plan
         </h3>
         
         <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-6">
@@ -41,30 +41,30 @@ export const LoadingProgress: React.FC<LoadingProgressProps> = ({ step, progress
         <div className="mt-6 space-y-2 text-xs text-gray-500 dark:text-gray-400">
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${progress >= 20 ? 'bg-green-500' : 'bg-gray-300'}`} />
-            <span>创建用户会话</span>
+            <span>Creating user session</span>
           </div>
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${progress >= 40 ? 'bg-green-500' : progress >= 20 ? 'bg-primary animate-pulse' : 'bg-gray-300'}`} />
-            <span>保存个人资料</span>
+            <span>Saving profile</span>
           </div>
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${progress >= 60 ? 'bg-green-500' : progress >= 40 ? 'bg-primary animate-pulse' : 'bg-gray-300'}`} />
-            <span>生成膳食计划 (21顿饭)</span>
+            <span>Generating meal plan (21 meals)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${progress >= 80 ? 'bg-green-500' : progress >= 60 ? 'bg-primary animate-pulse' : 'bg-gray-300'}`} />
-            <span>创建购物清单 (AI生成中...)</span>
+            <span>Creating shopping list (AI generating...)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${progress >= 100 ? 'bg-green-500' : progress >= 80 ? 'bg-primary animate-pulse' : 'bg-gray-300'}`} />
-            <span>完成并跳转</span>
+            <span>Complete and redirect</span>
           </div>
         </div>
         
         {progress >= 60 && progress < 80 && (
           <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
             <p className="text-xs text-yellow-800 dark:text-yellow-200 text-center">
-              💡 正在使用AI生成购物清单，这可能需要1-2分钟，请耐心等待...
+              💡 AI is generating the shopping list, this may take 1-2 minutes, please wait...
             </p>
           </div>
         )}
@@ -72,7 +72,3 @@ export const LoadingProgress: React.FC<LoadingProgressProps> = ({ step, progress
     </div>
   );
 };
-
-
-
-

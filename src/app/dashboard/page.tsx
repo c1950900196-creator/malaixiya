@@ -24,9 +24,9 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    // 如果 store 中已经有数据，先验证数据有效性
+    // If store already has data, validate first
     if (planDetails && planDetails.length > 0) {
-      // 检查缓存数据是否有效（必须有 id）
+      // Check if cached data is valid (must have id)
       const hasInvalidData = planDetails.some(detail => !detail.id || detail.id === '');
       
       if (hasInvalidData) {
@@ -44,11 +44,11 @@ export default function DashboardPage() {
   
   const loadMealPlan = async () => {
     try {
-      // 检查 Supabase 配置
+      // Check Supabase configuration
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || 
           process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-project')) {
         setIsLoading(false);
-        alert('⚠️ 请先配置 Supabase\n\n详细说明请查看：配置说明.md');
+        alert('⚠️ Please configure Supabase first\n\nSee: Configuration Guide');
         router.push('/');
         return;
       }
@@ -58,14 +58,14 @@ export default function DashboardPage() {
       
       if (!user) {
         console.log('No user found, redirecting to home');
-        alert('请先设置您的膳食档案');
+        alert('Please set up your meal profile first');
         router.push('/');
         return;
       }
       
       console.log('Loading meal plan for user:', user.id, user.is_anonymous ? '(anonymous)' : '(registered)');
       
-      // 获取当前活跃的膳食计划（最新的一个）
+      // Get current active meal plan (most recent one)
       const { data: plansList, error: planError } = await supabase
         .from('meal_plans')
         .select('*')
@@ -80,7 +80,7 @@ export default function DashboardPage() {
         return;
       }
       
-      // 如果没有计划，显示空状态
+      // If no plan, show empty state
       if (!plansList || plansList.length === 0) {
         console.log('No meal plans found');
         setIsLoading(false);
@@ -88,9 +88,9 @@ export default function DashboardPage() {
       }
       
       const plans = plansList[0];
-      setCurrentPlan(plans); // 保存到 store
+      setCurrentPlan(plans); // Save to store
       
-      // 获取计划详情 - 只加载必要字段以提高性能
+      // Get plan details - only load necessary fields for performance
       const { data: details, error: detailsError } = await supabase
         .from('meal_plan_details')
         .select(`
@@ -119,7 +119,7 @@ export default function DashboardPage() {
       
       if (detailsError) throw detailsError;
       
-      // 转换数据格式：将 recipe 数组转换为单个 recipe 对象
+      // Convert data format: convert recipe array to single recipe object
       const formattedDetails = (details || []).map((detail: any) => ({
         ...detail,
         recipe: Array.isArray(detail.recipe) ? detail.recipe[0] : detail.recipe,
@@ -129,11 +129,11 @@ export default function DashboardPage() {
     } catch (error: any) {
       console.error('Error:', error);
       
-      let errorMessage = '加载膳食计划失败';
+      let errorMessage = 'Failed to load meal plan';
       if (error.code === '42P01') {
-        errorMessage = '⚠️ 数据库表不存在\n\n请执行数据库初始化脚本\n详细说明：配置说明.md';
+        errorMessage = '⚠️ Database tables do not exist\n\nPlease run database initialization scripts\nSee: Configuration Guide';
       } else if (error.message?.includes('fetch')) {
-        errorMessage = '⚠️ 无法连接到 Supabase\n\n请检查配置和网络\n详细说明：配置说明.md';
+        errorMessage = '⚠️ Cannot connect to Supabase\n\nPlease check configuration and network\nSee: Configuration Guide';
       }
       
       alert(errorMessage);
@@ -155,16 +155,16 @@ export default function DashboardPage() {
       setIsLoading(true);
       const supabase = createBrowserClient();
       
-      // 1. 找到要替换的餐食
+      // 1. Find meal to replace
       const mealToReplace = planDetails?.find(detail => detail.id === mealId);
       console.log('🔍 Meal to replace:', mealToReplace);
       
       if (!mealToReplace) {
-        alert('找不到要替换的餐食');
+        alert('Cannot find meal to replace');
         return;
       }
       
-      // 2. 获取所有同类型的菜谱
+      // 2. Get all recipes of the same type
       console.log('🔍 Fetching recipes with meal_type:', mealToReplace.meal_type);
       
       let allRecipes: any[] = [];
@@ -182,50 +182,50 @@ export default function DashboardPage() {
         console.log('📦 All recipes:', allRecipes.length, 'Error:', recipesError);
       } catch (fetchError: any) {
         console.error('❌ Network error:', fetchError);
-        alert('网络连接失败，请检查网络后重试');
+        alert('Network connection failed, please check your network and try again');
         return;
       }
       
       if (recipesError) {
         console.error('❌ Supabase error:', recipesError);
-        alert(`数据库查询失败：${recipesError.message || '未知错误'}`);
+        alert(`Database query failed: ${recipesError.message || 'Unknown error'}`);
         return;
       }
       
       if (!allRecipes || allRecipes.length === 0) {
-        alert('没有找到同类型的菜谱');
+        alert('No recipes of the same type found');
         return;
       }
       
-      // 3. 过滤掉当前已在计划中的菜谱
+      // 3. Filter out recipes already in plan
       const currentRecipeIds = planDetails?.map(d => d.recipe_id) || [];
       const availableRecipes = allRecipes?.filter(recipe => !currentRecipeIds.includes(recipe.id)) || [];
       
       console.log('✅ Available recipes:', availableRecipes.length, 'Current IDs:', currentRecipeIds);
       
       if (availableRecipes.length === 0) {
-        alert('没有找到可替换的菜肴，所有同类型的菜品可能都已在您的计划中');
+        alert('No replacement dishes found. All dishes of this type may already be in your plan.');
         return;
       }
       
-      // 4. 随机选择一个新菜谱
+      // 4. Randomly select a new recipe
       const newRecipe = availableRecipes[Math.floor(Math.random() * availableRecipes.length)];
       
       console.log('🎲 Selected new recipe:', {
         id: newRecipe.id,
-        name: newRecipe.name_zh || newRecipe.name_ms || newRecipe.name_en,
+        name: newRecipe.name_en || newRecipe.name_zh || newRecipe.name_ms,
       });
       
-      // 验证数据
+      // Validate data
       if (!newRecipe || !newRecipe.id) {
-        alert('选择的菜谱数据无效，请重试');
+        alert('Selected recipe data is invalid, please try again');
         return;
       }
       
       if (!mealId || mealId === '') {
         console.error('❌ Invalid mealId:', mealId);
         console.error('Meal to replace:', mealToReplace);
-        alert('❌ 数据错误：餐食ID无效\n\n这通常是因为使用了旧的缓存数据。\n\n请返回首页重新生成膳食计划。');
+        alert('❌ Data error: Invalid meal ID\n\nThis usually happens with old cached data.\n\nPlease return to home and regenerate your meal plan.');
         return;
       }
       
@@ -234,7 +234,7 @@ export default function DashboardPage() {
         newRecipeId: newRecipe.id,
       });
       
-      // 5. 更新数据库
+      // 5. Update database
       const { error: updateError } = await supabase
         .from('meal_plan_details')
         .update({ recipe_id: newRecipe.id })
@@ -247,7 +247,7 @@ export default function DashboardPage() {
       
       console.log('✅ Database updated successfully');
       
-      // 6. 更新本地状态
+      // 6. Update local state
       const updatedDetails = planDetails?.map(detail => 
         detail.id === mealId 
           ? { ...detail, recipe_id: newRecipe.id, recipe: newRecipe as Recipe }
@@ -255,36 +255,36 @@ export default function DashboardPage() {
       );
       
       setPlanDetails(updatedDetails || []);
-      alert(`✅ 已将菜肴替换为：${newRecipe.name_zh || newRecipe.name_ms || newRecipe.name_en}`);
+      alert(`✅ Dish replaced with: ${newRecipe.name_en || newRecipe.name_zh || newRecipe.name_ms}`);
       
     } catch (error: any) {
       console.error('Replace meal error:', error);
       const errorMessage = error?.message || error?.error_description || JSON.stringify(error);
-      alert(`替换失败：${errorMessage}`);
+      alert(`Replace failed: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
   };
   
   const handleRegeneratePlan = async () => {
-    // TODO: 实现重新生成计划
-    alert('重新生成膳食计划功能即将推出！');
+    // TODO: Implement regenerate plan
+    alert('Regenerate meal plan feature coming soon!');
   };
   
-  const todayCalories = 1850; // TODO: 从实际数据计算
-  const weeklyProtein = 120; // TODO: 从实际数据计算
-  const weeklyCarbs = 200; // TODO: 从实际数据计算
+  const todayCalories = 1850; // TODO: Calculate from actual data
+  const weeklyProtein = 120; // TODO: Calculate from actual data
+  const weeklyCarbs = 200; // TODO: Calculate from actual data
   
   return (
     <MainLayout>
       <header className="h-16 bg-white dark:bg-background-dark border-b border-gray-200 dark:border-border-dark flex items-center justify-between px-6 py-4 z-10">
         <h1 className="text-xl font-bold text-gray-800 dark:text-white">
-          我的本周膳食计划
+          My Weekly Meal Plan
         </h1>
         <div className="flex items-center space-x-4">
           <div className="hidden md:flex items-center text-sm text-gray-500 dark:text-gray-300 bg-gray-100 dark:bg-surface-dark border border-transparent dark:border-border-dark px-3 py-1.5 rounded-md">
             <span className="mr-1">📅</span>
-            {new Date().toLocaleDateString('zh-CN')}
+            {new Date().toLocaleDateString('en-US')}
           </div>
           <Button
             variant="primary"
@@ -292,25 +292,25 @@ export default function DashboardPage() {
             leftIcon={<RefreshCw className="w-4 h-4" />}
             onClick={handleRegeneratePlan}
           >
-            重新生成计划
+            Regenerate Plan
           </Button>
         </div>
       </header>
       
       <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
-        {/* 统计卡片 */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card hover className="group">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold tracking-wider">
-                  今日热量目标
+                  Daily Calorie Target
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
                   {todayCalories}
                 </p>
                 <Badge variant="success" size="sm" className="mt-1">
-                  达标
+                  On Track
                 </Badge>
               </div>
               <div className="w-12 h-12 rounded-full bg-green-50 dark:bg-primary/10 flex items-center justify-center text-green-600 dark:text-primary">
@@ -323,11 +323,11 @@ export default function DashboardPage() {
             <CardContent className="p-4 flex items-center justify-between">
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold tracking-wider">
-                  平均蛋白质摄入
+                  Avg. Protein Intake
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
                   {weeklyProtein}g
-                  <span className="text-sm font-normal text-gray-500">/天</span>
+                  <span className="text-sm font-normal text-gray-500">/day</span>
                 </p>
               </div>
               <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
@@ -340,11 +340,11 @@ export default function DashboardPage() {
             <CardContent className="p-4 flex items-center justify-between">
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold tracking-wider">
-                  碳水化合物
+                  Carbohydrates
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
                   {weeklyCarbs}g
-                  <span className="text-sm font-normal text-gray-500">/天</span>
+                  <span className="text-sm font-normal text-gray-500">/day</span>
                 </p>
               </div>
               <div className="w-12 h-12 rounded-full bg-yellow-50 dark:bg-yellow-500/10 flex items-center justify-center text-yellow-600 dark:text-yellow-400">
@@ -364,25 +364,25 @@ export default function DashboardPage() {
               </div>
               <div className="z-10">
                 <p className="font-bold text-lg leading-tight text-white">
-                  购物清单<br />已准备就绪
+                  Shopping List<br />Ready
                 </p>
               </div>
               <div className="flex justify-between items-end z-10 mt-2">
                 <p className="text-xs font-semibold opacity-80 text-white">
-                  包含 32 种食材
+                  Includes 32 ingredients
                 </p>
                 <span className="text-xs bg-white text-primary px-3 py-1.5 rounded-full font-bold">
-                  查看清单
+                  View List
                 </span>
               </div>
             </CardContent>
           </Card>
         </div>
         
-        {/* 膳食日历 */}
+        {/* Meal Calendar */}
         {isLoading ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400">加载中...</p>
+            <p className="text-gray-500 dark:text-gray-400">Loading...</p>
           </div>
         ) : (
           <MealPlanCalendar
@@ -403,4 +403,3 @@ export default function DashboardPage() {
     </MainLayout>
   );
 }
-
