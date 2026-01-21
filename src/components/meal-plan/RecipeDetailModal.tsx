@@ -41,7 +41,7 @@ export const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({
           <div className="relative h-96 w-full">
             <Image
               src={recipe.image_url}
-              alt={recipe.name_en || recipe.name_zh}
+              alt={recipe.name_en || recipe.name_zh || 'Recipe'}
               fill
               className="object-cover opacity-90"
             />
