@@ -2,25 +2,24 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { MealPlanDetail, Recipe, ShoppingListItem, Ingredient } from '@/types/database.types';
 
-// 导出膳食计划为 PDF
+// Export meal plan to PDF
 export function exportMealPlanToPDF(
   meals: (MealPlanDetail & { recipe?: Recipe })[],
-  userName: string = '用户'
+  userName: string = 'User'
 ): void {
   const doc = new jsPDF();
   
-  // 设置中文字体 (需要在生产环境中添加中文字体支持)
   doc.setFont('helvetica', 'normal');
   
-  // 标题
+  // Title
   doc.setFontSize(20);
-  doc.text('7天膳食计划', 105, 20, { align: 'center' });
+  doc.text('7-Day Meal Plan', 105, 20, { align: 'center' });
   
   doc.setFontSize(12);
-  doc.text(`用户: ${userName}`, 20, 35);
-  doc.text(`生成日期: ${new Date().toLocaleDateString('zh-CN')}`, 20, 42);
+  doc.text(`User: ${userName}`, 20, 35);
+  doc.text(`Generated: ${new Date().toLocaleDateString('en-US')}`, 20, 42);
   
-  // 按日期分组
+  // Group by date
   const groupedMeals: { [date: string]: (MealPlanDetail & { recipe?: Recipe })[] } = {};
   meals.forEach((meal) => {
     if (!groupedMeals[meal.date]) {
@@ -39,19 +38,19 @@ export function exportMealPlanToPDF(
         yPos = 20;
       }
       
-      // 日期标题
+      // Date title
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.text(`Day ${index + 1} - ${new Date(date).toLocaleDateString('zh-CN')}`, 20, yPos);
+      doc.text(`Day ${index + 1} - ${new Date(date).toLocaleDateString('en-US')}`, 20, yPos);
       yPos += 10;
       
-      // 该天的餐食表格
+      // Meals table for this day
       const dayMeals = groupedMeals[date];
       const tableData = dayMeals.map((meal) => [
         getMealTypeLabel(meal.meal_type),
         meal.recipe?.name_en || 'Unknown',
         `${meal.recipe?.prep_time || 0} + ${meal.recipe?.cook_time || 0} min`,
-        '450 kcal', // TODO: 从 nutrition 表获取
+        '450 kcal', // TODO: Get from nutrition table
       ]);
       
       autoTable(doc, {
@@ -66,36 +65,36 @@ export function exportMealPlanToPDF(
       yPos = (doc as any).lastAutoTable.finalY + 15;
     });
   
-  // 保存PDF
+  // Save PDF
   doc.save(`meal-plan-${new Date().toISOString().split('T')[0]}.pdf`);
 }
 
-// 获取食材显示名称的辅助函数 (PDF 使用英文名，避免中文乱码)
+// Get ingredient display name (use English for PDF)
 function getIngredientName(item: ShoppingListItem & { ingredient?: Ingredient }): string {
-  // notes 字段格式: "中文名 | English | Bahasa Malaysia"
-  // PDF 不支持中文，使用第二部分（英文名）
+  // notes format: "Chinese | English | Bahasa Malaysia"
+  // PDF doesn't support Chinese, use second part (English name)
   if (item.notes) {
     const parts = item.notes.split('|');
-    const englishName = parts[1]?.trim();  // 第二部分是英文名
-    const malayName = parts[2]?.trim();    // 第三部分是马来文名
+    const englishName = parts[1]?.trim();  // Second part is English
+    const malayName = parts[2]?.trim();    // Third part is Malay
     if (englishName) return englishName;
     if (malayName) return malayName;
   }
   
-  // 回退到 ingredient 关联数据
+  // Fallback to ingredient relation data
   return item.ingredient?.name_en || 
          item.ingredient?.name_ms || 
          'Unknown';
 }
 
-// 导出购物清单为 PDF
+// Export shopping list to PDF
 export function exportShoppingListToPDF(
   items: (ShoppingListItem & { ingredient?: Ingredient })[],
   totalCost: number
 ): void {
   const doc = new jsPDF();
   
-  // 标题
+  // Title
   doc.setFontSize(20);
   doc.text('Weekly Shopping List', 105, 20, { align: 'center' });
   
@@ -103,7 +102,7 @@ export function exportShoppingListToPDF(
   doc.text(`Date: ${new Date().toLocaleDateString('en-US')}`, 20, 35);
   doc.text(`Total Estimated Cost: RM ${totalCost.toFixed(2)}`, 20, 42);
   
-  // 按类别分组
+  // Group by category
   const groupedItems: { [category: string]: (ShoppingListItem & { ingredient?: Ingredient })[] } = {};
   items.forEach((item) => {
     const category = item.category || 'Others';
@@ -121,19 +120,19 @@ export function exportShoppingListToPDF(
       yPos = 20;
     }
     
-    // 类别标题
+    // Category title
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.text(category, 20, yPos);
     yPos += 8;
     
-    // 该类别的食材表格
+    // Items table for this category
     const categoryItems = groupedItems[category];
     const tableData = categoryItems.map((item) => [
       getIngredientName(item),
       `${item.quantity} ${item.unit}`,
       `RM ${(item.estimated_price || 0).toFixed(2)}`,
-      '&', // Checkbox (using & as placeholder since PDF doesn't support checkbox unicode well)
+      '☐', // Checkbox
     ]);
     
     autoTable(doc, {
@@ -151,11 +150,11 @@ export function exportShoppingListToPDF(
     yPos = (doc as any).lastAutoTable.finalY + 12;
   });
   
-  // 保存PDF
+  // Save PDF
   doc.save(`shopping-list-${new Date().toISOString().split('T')[0]}.pdf`);
 }
 
-// 辅助函数
+// Helper function
 function getMealTypeLabel(type: string): string {
   const labels: Record<string, string> = {
     breakfast: 'Breakfast',
@@ -165,8 +164,3 @@ function getMealTypeLabel(type: string): string {
   };
   return labels[type] || type;
 }
-
-
-
-
-

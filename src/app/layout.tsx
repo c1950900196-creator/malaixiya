@@ -5,8 +5,8 @@ import './globals.css';
 const manrope = Manrope({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'MYMeal AI - 智能膳食计划',
-  description: '为马来西亚用户打造的AI驱动个性化膳食计划系统',
+  title: 'MYMeal AI - Smart Meal Planner',
+  description: 'AI-powered personalized meal planning system for Malaysian cuisine',
 };
 
 export default function RootLayout({
@@ -15,13 +15,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="zh-CN" className="dark">
+    <html lang="en" className="dark">
       <body className={manrope.className}>{children}</body>
     </html>
   );
 }
-
-
-
-
-
