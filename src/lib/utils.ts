@@ -62,9 +62,9 @@ export function formatPrice(price: number): string {
   return `RM ${price.toFixed(2)}`;
 }
 
-// 格式化日期
+// Format date
 export function formatDate(date: string | Date): string {
-  return new Date(date).toLocaleDateString('zh-CN', {
+  return new Date(date).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
