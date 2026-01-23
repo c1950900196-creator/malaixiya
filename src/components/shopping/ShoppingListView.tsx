@@ -187,11 +187,12 @@ export const ShoppingListView: React.FC<ShoppingListViewProps> = ({
                             : 'text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors'
                         }
                       >
-                        {/* Prefer notes field (AI-generated ingredient name), fallback to ingredient relation */}
-                        {item.notes?.split('|')[0]?.trim() || 
-                         item.ingredient?.name_zh || 
-                         item.ingredient?.name_ms || 
+                        {/* Prefer English name from notes field, fallback to ingredient relation */}
+                        {item.notes?.split('|')[1]?.trim() || 
+                         item.notes?.split('|')[2]?.trim() ||
                          item.ingredient?.name_en || 
+                         item.ingredient?.name_ms || 
+                         item.notes?.split('|')[0]?.trim() ||
                          'Unknown Ingredient'}
                       </p>
                       <div className="flex items-center justify-between mt-1">

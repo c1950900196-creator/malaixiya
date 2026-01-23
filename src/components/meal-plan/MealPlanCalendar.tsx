@@ -158,7 +158,7 @@ export const MealPlanCalendar: React.FC<MealPlanCalendarProps> = ({
                 </h3>
                 
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2 min-h-[40px]">
-                  {meal.recipe?.description || 'Delicious Malaysian cuisine'}
+                  {meal.recipe?.name_ms || 'Delicious Malaysian cuisine'}
                 </p>
                 
                 <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-4">
